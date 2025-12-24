@@ -231,18 +231,32 @@
 .services-grid {
     max-width: 1400px;
     margin: 0 auto;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    justify-content: center;
+    /* Center cards horizontally */
+    flex-wrap: wrap;
     gap: 40px;
+    align-items: stretch;
 }
 
 .service-card {
+    /* Set a flexible width with bounds */
+    flex: 1;
+    min-width: 320px;
+    max-width: 600px;
+    width: 100%;
+    /* Keep existing styles below */
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(10px);
     padding: 30px;
     border-radius: 40px;
     transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Center horizontally */
+    text-align: center;
 }
 
 .service-card:hover {
@@ -288,29 +302,29 @@
 .service-list {
     list-style: none;
     padding: 0;
-    margin: 0 0 40px 0;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 30px;
-    /* Increased gap to prevent overlap */
-    row-gap: 16px;
+    margin: 0 auto 40px;
+    /* Center the list block */
+    display: flex;
+    /* Single column */
+    flex-direction: column;
+    gap: 16px;
+    text-align: left;
+    /* Keep item text left aligned */
+    width: fit-content;
+    /* Shrink to fit content so it can be centered */
+    min-width: 280px;
+    /* But keep a minimum width */
 }
 
 .service-list li {
-    font-size: 0.95rem;
+    font-size: 1.05rem;
+    /* Slightly larger text */
     display: flex;
     align-items: flex-start;
-    gap: 12px;
-    line-height: 1.5;
+    gap: 16px;
+    line-height: 1.6;
     position: relative;
-    padding-left: 15px;
-    /* Space for bullet */
-}
-
-@media (max-width: 600px) {
-    .service-list {
-        grid-template-columns: 1fr;
-    }
+    padding-left: 20px;
 }
 
 .service-list li svg {

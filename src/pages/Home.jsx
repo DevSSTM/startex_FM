@@ -102,7 +102,6 @@ const Home = () => {
                 <div className="services-grid">
                     {services.map((service) => (
                         <div key={service.id} className={`service-card ${service.featured ? 'featured' : ''}`}>
-                            {service.featured && <div className="popular-badge">Most Popular</div>}
                             <h3>{service.name}</h3>
                             {/* Target description removed as requested */}
                             <ul className="service-list">

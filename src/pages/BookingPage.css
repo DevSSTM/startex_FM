@@ -165,19 +165,40 @@
 
 .card-features li {
     font-size: 0.85rem;
-    color: var(--text-grey);
     margin-bottom: 8px;
     position: relative;
     padding-left: 24px;
     line-height: 1.4;
+    text-align: left;
+}
+
+.card-features li.included {
+    color: var(--text-dark);
+}
+
+.card-features li.excluded {
+    color: #ef4444;
+    /* Red color */
+    opacity: 0.8;
 }
 
 .card-features li::before {
-    content: '✔';
     position: absolute;
-    left: 4px;
-    color: var(--primary);
+    left: 0;
     font-weight: bold;
+}
+
+.card-features li.included::before {
+    content: '✔';
+    color: #10b981;
+    /* Green tick */
+}
+
+.card-features li.excluded::before {
+    content: '✖';
+    color: #ef4444;
+    /* Red x */
+    font-size: 0.9em;
 }
 
 .option-card span {
@@ -529,61 +550,106 @@
 }
 
 /* Add-ons Grid */
+/* Add-ons Grid */
 .addons-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    /* Wider cards */
+    gap: 24px;
+    margin-bottom: 40px;
+    /* Space before total */
 }
 
 .addon-card {
     background: white;
-    border: 2px solid #f1f5f9;
-    padding: 20px;
-    border-radius: 20px;
+    border: 3px solid #f1f5f9;
+    /* Thicker border */
+    padding: 24px 30px;
+    /* More padding */
+    border-radius: 24px;
     cursor: pointer;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    /* Subtle shadow */
 }
 
 .addon-card:hover {
     border-color: var(--secondary);
     background: #f8fafc;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
 .addon-card.selected {
     border-color: var(--primary);
     background: #f0f9ff;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 15px -3px rgba(0, 26, 110, 0.15);
 }
 
 .addon-info h4 {
-    font-size: 1rem;
-    margin-bottom: 4px;
+    font-size: 1.2rem;
+    /* Larger font */
+    margin-bottom: 8px;
     color: var(--text-dark);
+    font-weight: 700;
 }
 
 .addon-info span {
-    font-size: 0.85rem;
-    font-weight: 700;
+    font-size: 1rem;
+    font-weight: 800;
     color: var(--primary);
+    background: #e0f2fe;
+    /* Badge style */
+    padding: 4px 12px;
+    border-radius: 100px;
 }
 
 .checkbox {
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    /* Larger checkbox */
+    height: 32px;
     border-radius: 50%;
-    border: 2px solid #cbd5e1;
+    border: 3px solid #cbd5e1;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
+    background: white;
 }
 
 .addon-card.selected .checkbox {
     background: var(--primary);
     border-color: var(--primary);
     color: white;
+    transform: scale(1.1);
+}
+
+/* Smaller Price Summary for Add-ons Step */
+.price-summary-small {
+    background: #f8fafc;
+    border-top: 2px dashed #e2e8f0;
+    padding: 20px;
+    border-radius: 16px;
+    text-align: right;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.price-summary-small span {
+    font-size: 1rem;
+    color: var(--text-grey);
+    font-weight: 600;
+}
+
+.price-summary-small h2 {
+    font-size: 1.8rem;
+    color: var(--primary);
+    margin: 0;
+    font-weight: 800;
 }

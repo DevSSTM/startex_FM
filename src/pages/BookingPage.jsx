@@ -25,10 +25,10 @@ const BookingPage = () => {
     const [totalPrice, setTotalPrice] = useState(0)
 
     const AVAILABLE_ADDONS = [
-        { id: 'ac', name: 'AC Cleaning', price: 2500 },
-        { id: 'fridge', name: 'Refrigerator Cleaning', price: 1500 },
-        { id: 'oven', name: 'Oven Deep Clean', price: 1200 },
-        { id: 'window', name: 'Extra Window Cleaning', price: 1000 }
+        { id: 'ac', name: 'AC Cleaning', price: 2500, color: '#2563eb', bg: '#dbeafe' }, // Blue
+        { id: 'fridge', name: 'Refrigerator Cleaning', price: 1500, color: '#059669', bg: '#d1fae5' }, // Green
+        { id: 'oven', name: 'Oven Deep Clean', price: 1200, color: '#ea580c', bg: '#ffedd5' }, // Orange
+        { id: 'window', name: 'Extra Window Cleaning', price: 1000, color: '#7c3aed', bg: '#ede9fe' } // Purple
     ]
 
     useEffect(() => {
@@ -42,13 +42,19 @@ const BookingPage = () => {
                 type: 'normal',
                 description: 'Target: Daily/weekly apartment upkeep',
                 features: [
-                    'Floor sweeping & mopping',
-                    'Washroom cleaning (toilets, sinks, mirrors, floors)',
-                    'Dusting surfaces (tables, shelves, counters)',
-                    'Balcony sweeping & mopping',
-                    'Cobweb removal',
-                    'Kitchen countertop & external surface wipe-down',
-                    'Spot cleaning where required'
+                    { text: 'Floor sweeping & mopping', included: true },
+                    { text: 'Washroom cleaning (toilets, sinks, mirrors, floors)', included: true },
+                    { text: 'Dusting surfaces (tables, shelves, counters)', included: true },
+                    { text: 'Balcony sweeping & mopping', included: true },
+                    { text: 'Cobweb removal', included: true },
+                    { text: 'Kitchen countertop & external surface wipe-down', included: true },
+                    { text: 'Spot cleaning where required', included: true },
+                    { text: 'Deep cleaning of kitchen (appliances external, cabinets external)', included: false },
+                    { text: 'Polishing wood surfaces & furniture', included: false },
+                    { text: 'Window & glass panel cleaning', included: false },
+                    { text: 'Skirting, fans, light fixtures & switchboards detailed cleaning', included: false },
+                    { text: 'Vacuuming carpets, sofas, rugs', included: false },
+                    { text: 'Hard stain removal (best-effort basis)', included: false }
                 ],
             },
             {
@@ -59,19 +65,25 @@ const BookingPage = () => {
                 type: 'deep',
                 description: 'Target: Weekly, Seasonal, move-in/move-out, post-renovation',
                 features: [
-                    'All tasks from Normal Cleaning PLUS:',
-                    'Deep cleaning of kitchen (appliances external, cabinets external)',
-                    'Polishing wood surfaces & furniture',
-                    'Window & glass panel cleaning',
-                    'Skirting, fans, light fixtures & switchboards detailed cleaning',
-                    'Vacuuming carpets, sofas, rugs',
-                    'Hard stain removal (best-effort basis)'
+                    { text: 'Floor sweeping & mopping', included: true },
+                    { text: 'Washroom cleaning (toilets, sinks, mirrors, floors)', included: true },
+                    { text: 'Dusting surfaces (tables, shelves, counters)', included: true },
+                    { text: 'Balcony sweeping & mopping', included: true },
+                    { text: 'Cobweb removal', included: true },
+                    { text: 'Kitchen countertop & external surface wipe-down', included: true },
+                    { text: 'Spot cleaning where required', included: true },
+                    { text: 'Deep cleaning of kitchen (appliances external, cabinets external)', included: true },
+                    { text: 'Polishing wood surfaces & furniture', included: true },
+                    { text: 'Window & glass panel cleaning', included: true },
+                    { text: 'Skirting, fans, light fixtures & switchboards detailed cleaning', included: true },
+                    { text: 'Vacuuming carpets, sofas, rugs', included: true },
+                    { text: 'Hard stain removal (best-effort basis)', included: true }
                 ],
             }
         ]
 
         setServices(coreServices)
-        localStorage.setItem('services', JSON.stringify(coreServices)) // Update localStorage
+        // Update localStorage
 
         // Auto-select Normal Cleaning
         setFormData(prev => ({
@@ -255,8 +267,10 @@ const BookingPage = () => {
                                         <p>{service.description || 'Professional Cleaning'}</p>
                                         {service.features && (
                                             <ul className="card-features">
-                                                {service.features.map((f, i) => (
-                                                    <li key={i}>{f}</li>
+                                                {service.features.map((item, i) => (
+                                                    <li key={i} className={item.included ? 'included' : 'excluded'}>
+                                                        {item.text}
+                                                    </li>
                                                 ))}
                                             </ul>
                                         )}
@@ -302,23 +316,44 @@ const BookingPage = () => {
                         <div className="step-content">
                             <h3>Select Add-ons</h3>
                             <div className="addons-grid">
-                                {AVAILABLE_ADDONS.map(addon => (
-                                    <div
-                                        key={addon.id}
-                                        className={`addon-card ${formData.addons.includes(addon.id) ? 'selected' : ''}`}
-                                        onClick={() => toggleAddon(addon.id)}
-                                    >
-                                        <div className="addon-info">
-                                            <h4>{addon.name}</h4>
-                                            <span>+ LKR {addon.price}</span>
+                                {AVAILABLE_ADDONS.map(addon => {
+                                    const isSelected = formData.addons.includes(addon.id)
+                                    return (
+                                        <div
+                                            key={addon.id}
+                                            className={`addon-card ${isSelected ? 'selected' : ''}`}
+                                            onClick={() => toggleAddon(addon.id)}
+                                            style={{
+                                                borderColor: isSelected ? addon.color : 'transparent',
+                                                backgroundColor: addon.bg, // Always show the color
+                                                transform: isSelected ? 'scale(1.02)' : 'scale(1)'
+                                            }}
+                                        >
+                                            <div className="addon-info">
+                                                <h4 style={{ color: '#1e293b' }}>{addon.name}</h4>
+                                                <span style={{
+                                                    color: addon.color,
+                                                    backgroundColor: 'rgba(255,255,255,0.8)',
+                                                    border: '1px solid rgba(0,0,0,0.05)'
+                                                }}>
+                                                    LKR {addon.price}
+                                                </span>
+                                            </div>
+                                            <div
+                                                className={`checkbox ${isSelected ? 'checked' : ''}`}
+                                                style={{
+                                                    borderColor: addon.color,
+                                                    backgroundColor: isSelected ? addon.color : 'white',
+                                                    color: 'white'
+                                                }}
+                                            >
+                                                {isSelected && <CheckCircle size={20} />}
+                                            </div>
                                         </div>
-                                        <div className={`checkbox ${formData.addons.includes(addon.id) ? 'checked' : ''}`}>
-                                            {formData.addons.includes(addon.id) && <CheckCircle size={20} />}
-                                        </div>
-                                    </div>
-                                ))}
+                                    )
+                                })}
                             </div>
-                            <div className="price-preview mt-4">
+                            <div className="price-summary-small">
                                 <span>Total Price:</span>
                                 <h2>LKR {totalPrice.toLocaleString()}</h2>
                             </div>
