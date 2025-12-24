@@ -210,10 +210,16 @@ const BookingPage = () => {
         const existingIds = bookings.map(b => b.id).filter(id => id < 900000) // Filter out timestamp IDs
         const nextId = existingIds.length > 0 ? Math.max(...existingIds) + 1 : 1
 
+        const selectedAddons = formData.addons.map(id => AVAILABLE_ADDONS.find(a => a.id === id)).filter(Boolean)
+        const addonsCost = selectedAddons.reduce((acc, a) => acc + a.price, 0)
+        const baseAndRoomsPrice = totalPrice - addonsCost
+
         const newBooking = {
             ...formData,
             serviceType: selected.name,
-            addons: formData.addons.map(id => AVAILABLE_ADDONS.find(a => a.id === id)?.name).join(', '),
+            addons: selectedAddons.map(a => a.name).join(', '),
+            addonDetails: selectedAddons, // Array of {name, price}
+            baseAndRoomsPrice: baseAndRoomsPrice,
             id: nextId,
             status: 'pending',
             price: totalPrice,

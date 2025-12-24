@@ -365,8 +365,9 @@
     padding: 60px;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
     min-height: 1000px;
-    position: relative;
     color: #1e293b;
+    display: flex;
+    flex-direction: column;
 }
 
 .invoice-header {
@@ -482,15 +483,12 @@
 }
 
 .invoice-footer {
-    position: absolute;
-    bottom: 60px;
-    left: 60px;
-    right: 60px;
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
     border-top: 1px solid #f1f5f9;
     padding-top: 40px;
+    margin-top: auto;
 }
 
 .payment-info h3 {

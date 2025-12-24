@@ -722,11 +722,7 @@ const Admin = () => {
                         <div className="invoice-paper" id="invoice-bill">
                             <header className="invoice-header">
                                 <div className="invoice-logo">
-                                    <Sparkles className="logo-sparkle" />
-                                    <div>
-                                        <h1>STRATEX</h1>
-                                        <span>Strategizing Facility Excellence</span>
-                                    </div>
+                                    <img src="/logo/logo.png" alt="Stratex Logo" style={{ height: '80px', objectFit: 'contain' }} />
                                 </div>
                                 <div className="invoice-meta">
                                     <h2>INVOICE</h2>
@@ -763,23 +759,44 @@ const Admin = () => {
                                     <tr>
                                         <td>
                                             <strong>{selectedBooking.serviceType.toUpperCase()} CLEANING</strong>
-                                            <p>Professional professional cleaning service</p>
+                                            <p>Professional cleaning service</p>
                                         </td>
                                         <td>
                                             {selectedBooking.date}<br />
                                             <small>{selectedBooking.startTime} - {selectedBooking.endTime}</small>
                                         </td>
                                         <td>{selectedBooking.rooms} Rooms</td>
-                                        <td style={{ textAlign: 'right' }}>LKR {selectedBooking.price.toLocaleString()}</td>
+                                        <td style={{ textAlign: 'right' }}>
+                                            LKR {(selectedBooking.baseAndRoomsPrice || selectedBooking.price).toLocaleString()}
+                                        </td>
                                     </tr>
+                                    {selectedBooking.addonDetails && selectedBooking.addonDetails.map((addon, idx) => (
+                                        <tr key={idx}>
+                                            <td colSpan="3" style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                                <div style={{ marginLeft: '20px' }}>
+                                                    <strong>+ {addon.name}</strong>
+                                                    <small style={{ display: 'block', color: '#64748b' }}>Add-on Service</small>
+                                                </div>
+                                            </td>
+                                            <td style={{ textAlign: 'right', borderBottom: '1px solid #f1f5f9' }}>
+                                                LKR {addon.price.toLocaleString()}
+                                            </td>
+                                        </tr>
+                                    ))}
                                 </tbody>
                             </table>
 
                             <div className="invoice-summary">
                                 <div className="summary-row">
-                                    <span>Subtotal</span>
-                                    <span>LKR {selectedBooking.price.toLocaleString()}</span>
+                                    <span>Service Subtotal</span>
+                                    <span>LKR {(selectedBooking.baseAndRoomsPrice || selectedBooking.price).toLocaleString()}</span>
                                 </div>
+                                {selectedBooking.addonDetails && selectedBooking.addonDetails.length > 0 && (
+                                    <div className="summary-row">
+                                        <span>Add-ons Total</span>
+                                        <span>LKR {selectedBooking.addonDetails.reduce((acc, a) => acc + a.price, 0).toLocaleString()}</span>
+                                    </div>
+                                )}
                                 <div className="summary-row">
                                     <span>Tax (0%)</span>
                                     <span>LKR 0</span>
@@ -798,7 +815,7 @@ const Admin = () => {
                                 </div>
                                 <div className="thanks-msg">
                                     <p>Thank you for choosing Stratex!</p>
-                                    <div className="stamp">PAID</div>
+                                    <p>Thank you for choosing Stratex!</p>
                                 </div>
                             </footer>
                         </div>
@@ -856,8 +873,19 @@ const Admin = () => {
                                             <p>Approx {viewBooking.endTime ? `${parseInt(viewBooking.endTime) - parseInt(viewBooking.startTime)} Hours` : 'Standard'}</p>
                                         </div>
                                         <div className="detail-item full-width">
-                                            <label>Add-ons</label>
-                                            <p>{viewBooking.addons || 'None'}</p>
+                                            <label>Add-ons & Options</label>
+                                            <div className="view-addons-list" style={{ marginTop: '8px' }}>
+                                                {viewBooking.addonDetails && viewBooking.addonDetails.length > 0 ? (
+                                                    viewBooking.addonDetails.map((addon, idx) => (
+                                                        <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 15px', background: '#f8fafc', borderRadius: '10px', marginBottom: '5px', border: '1px solid #e2e8f0' }}>
+                                                            <span style={{ fontWeight: '600', color: '#1e293b' }}>+ {addon.name}</span>
+                                                            <strong style={{ color: 'var(--primary)' }}>LKR {addon.price.toLocaleString()}</strong>
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <p>{viewBooking.addons || 'None'}</p>
+                                                )}
+                                            </div>
                                         </div>
                                         <div className="detail-item full-width">
                                             <label>Remarks</label>
