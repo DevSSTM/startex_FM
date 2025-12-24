@@ -15,6 +15,7 @@ const BookingPage = () => {
         date: format(new Date(), 'yyyy-MM-dd'),
         startTime: '08:00',
         rooms: 2,
+        addons: [],
         name: '',
         phone: '',
         address: '',
@@ -23,27 +24,64 @@ const BookingPage = () => {
 
     const [totalPrice, setTotalPrice] = useState(0)
 
-    useEffect(() => {
-        // Load services
-        const savedServices = JSON.parse(localStorage.getItem('services'))
-        if (savedServices) {
-            setServices(savedServices)
-            if (savedServices.length > 0) {
-                setFormData(prev => ({
-                    ...prev,
-                    serviceType: savedServices[0].name.toLowerCase(),
-                    serviceId: savedServices[0].id
-                }))
-            }
-        } else {
-            const defaults = [
-                { id: 1, name: 'Normal Cleaning', basePrice: 15000, duration: '3 Hours', type: 'normal' },
-                { id: 2, name: 'Deep Cleaning', basePrice: 20000, duration: '5 Hours', type: 'deep' }
-            ]
-            setServices(defaults)
-            setFormData(prev => ({ ...prev, serviceType: 'normal', serviceId: 1 }))
-        }
+    const AVAILABLE_ADDONS = [
+        { id: 'ac', name: 'AC Cleaning', price: 2500 },
+        { id: 'fridge', name: 'Refrigerator Cleaning', price: 1500 },
+        { id: 'oven', name: 'Oven Deep Clean', price: 1200 },
+        { id: 'window', name: 'Extra Window Cleaning', price: 1000 }
+    ]
 
+    useEffect(() => {
+        // Enforce the latest service definitions
+        const coreServices = [
+            {
+                id: 1,
+                name: 'Normal Cleaning',
+                basePrice: 15000,
+                duration: '3 Hours',
+                type: 'normal',
+                description: 'Target: Daily/weekly apartment upkeep',
+                features: [
+                    'Floor sweeping & mopping',
+                    'Washroom cleaning (toilets, sinks, mirrors, floors)',
+                    'Dusting surfaces (tables, shelves, counters)',
+                    'Balcony sweeping & mopping',
+                    'Cobweb removal',
+                    'Kitchen countertop & external surface wipe-down',
+                    'Spot cleaning where required'
+                ],
+            },
+            {
+                id: 2,
+                name: 'Deep Cleaning',
+                basePrice: 20000,
+                duration: '5 Hours',
+                type: 'deep',
+                description: 'Target: Weekly, Seasonal, move-in/move-out, post-renovation',
+                features: [
+                    'All tasks from Normal Cleaning PLUS:',
+                    'Deep cleaning of kitchen (appliances external, cabinets external)',
+                    'Polishing wood surfaces & furniture',
+                    'Window & glass panel cleaning',
+                    'Skirting, fans, light fixtures & switchboards detailed cleaning',
+                    'Vacuuming carpets, sofas, rugs',
+                    'Hard stain removal (best-effort basis)'
+                ],
+            }
+        ]
+
+        setServices(coreServices)
+        localStorage.setItem('services', JSON.stringify(coreServices)) // Update localStorage
+
+        // Auto-select Normal Cleaning
+        setFormData(prev => ({
+            ...prev,
+            serviceType: 'normal',
+            serviceId: 1
+        }))
+    }, [])
+
+    useEffect(() => {
         // Load existing bookings to check availability
         const bookings = JSON.parse(localStorage.getItem('bookings') || '[]')
         setExistingBookings(bookings)
@@ -53,15 +91,24 @@ const BookingPage = () => {
         const selected = services.find(s => s.id === formData.serviceId)
         if (selected) {
             let price = Number(selected.basePrice)
+
+            // Room surcharge logic
             if (formData.rooms === 3) price += (price * 0.15)
             if (formData.rooms === 4) price += (price * 0.3)
-            setTotalPrice(Math.round(price))
+
+            // Add-ons calculation
+            const addonsCost = formData.addons.reduce((acc, addonId) => {
+                const addon = AVAILABLE_ADDONS.find(a => a.id === addonId)
+                return acc + (addon ? addon.price : 0)
+            }, 0)
+
+            setTotalPrice(Math.round(price + addonsCost))
         }
-    }, [formData.serviceId, formData.rooms, services])
+    }, [formData.serviceId, formData.rooms, formData.addons, services])
 
     // Availability Logic
-    // Availability Logic
-    const timeSlots = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00']
+    const morningSlots = ['08:00', '09:00', '10:00']
+    const eveningSlots = ['13:00', '14:00', '15:00']
 
     const checkSlotAvailability = (time) => {
         const selectedService = services.find(s => s.id === formData.serviceId)
@@ -126,6 +173,16 @@ const BookingPage = () => {
     const handleNext = () => setStep(step + 1)
     const handleBack = () => setStep(step - 1)
 
+    const toggleAddon = (id) => {
+        setFormData(prev => {
+            if (prev.addons.includes(id)) {
+                return { ...prev, addons: prev.addons.filter(a => a !== id) }
+            } else {
+                return { ...prev, addons: [...prev.addons, id] }
+            }
+        })
+    }
+
     const handleSubmit = (e) => {
         e.preventDefault()
         const selected = services.find(s => s.id === formData.serviceId)
@@ -135,6 +192,7 @@ const BookingPage = () => {
         const newBooking = {
             ...formData,
             serviceType: selected.name,
+            addons: formData.addons.map(id => AVAILABLE_ADDONS.find(a => a.id === id)?.name).join(', '),
             id: Date.now(),
             status: 'pending',
             price: totalPrice,
@@ -143,7 +201,7 @@ const BookingPage = () => {
         }
         bookings.push(newBooking)
         localStorage.setItem('bookings', JSON.stringify(bookings))
-        setStep(5)
+        setStep(6)
     }
 
     const sendToWhatsApp = () => {
@@ -151,8 +209,11 @@ const BookingPage = () => {
         const message = `*STRATEX Booking Request*\n\n` +
             `*Service:* ${selected.name}\n` +
             `*Date:* ${formData.date}\n` +
+            `*Service:* ${selected.name}\n` +
+            `*Date:* ${formData.date}\n` +
             `*Time:* ${formData.startTime}\n` +
             `*Rooms:* ${formData.rooms}\n` +
+            `*Add-ons:* ${formData.addons.length > 0 ? formData.addons.map(id => AVAILABLE_ADDONS.find(a => a.id === id)?.name).join(', ') : 'None'}\n` +
             `*Price:* LKR ${totalPrice.toLocaleString()}\n\n` +
             `*Customer:* ${formData.name}\n` +
             `*Phone:* ${formData.phone}\n` +
@@ -172,12 +233,13 @@ const BookingPage = () => {
                 </div>
 
                 <div className="progress-bar no-print">
-                    {[1, 2, 3, 4].map(s => (
+                    {[1, 2, 3, 4, 5].map(s => (
                         <div key={s} className={`step ${step >= s ? 'active' : ''}`}>{s}</div>
                     ))}
                 </div>
 
                 <div className="form-card">
+                    {/* Step 1: Service Selection */}
                     {step === 1 && (
                         <div className="step-content">
                             <h3>Select Service Type</h3>
@@ -191,6 +253,13 @@ const BookingPage = () => {
                                         {service.type === 'deep' ? <Sparkles size={32} /> : <Home size={32} />}
                                         <h4>{service.name}</h4>
                                         <p>{service.description || 'Professional Cleaning'}</p>
+                                        {service.features && (
+                                            <ul className="card-features">
+                                                {service.features.map((f, i) => (
+                                                    <li key={i}>{f}</li>
+                                                ))}
+                                            </ul>
+                                        )}
                                         <span>Approx {service.duration}</span>
                                     </div>
                                 ))}
@@ -199,7 +268,69 @@ const BookingPage = () => {
                         </div>
                     )}
 
+                    {/* Step 2: Property Details */}
                     {step === 2 && (
+                        <div className="step-content">
+                            <h3>Property Details</h3>
+                            <div className="input-group">
+                                <label>Number of Bedrooms</label>
+                                <div className="room-selector">
+                                    {[2, 3, 4].map(num => (
+                                        <button
+                                            key={num}
+                                            className={formData.rooms === num ? 'selected' : ''}
+                                            onClick={() => setFormData({ ...formData, rooms: num })}
+                                        >
+                                            {num} Rooms
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="price-preview">
+                                <span>Estimated Price:</span>
+                                <h2>LKR {totalPrice.toLocaleString()}</h2>
+                            </div>
+                            <div className="actions">
+                                <button className="btn-secondary" onClick={handleBack}>Back</button>
+                                <button className="btn-primary" onClick={handleNext}>Next Step</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Step 3: Add-ons */}
+                    {step === 3 && (
+                        <div className="step-content">
+                            <h3>Select Add-ons</h3>
+                            <div className="addons-grid">
+                                {AVAILABLE_ADDONS.map(addon => (
+                                    <div
+                                        key={addon.id}
+                                        className={`addon-card ${formData.addons.includes(addon.id) ? 'selected' : ''}`}
+                                        onClick={() => toggleAddon(addon.id)}
+                                    >
+                                        <div className="addon-info">
+                                            <h4>{addon.name}</h4>
+                                            <span>+ LKR {addon.price}</span>
+                                        </div>
+                                        <div className={`checkbox ${formData.addons.includes(addon.id) ? 'checked' : ''}`}>
+                                            {formData.addons.includes(addon.id) && <CheckCircle size={20} />}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="price-preview mt-4">
+                                <span>Total Price:</span>
+                                <h2>LKR {totalPrice.toLocaleString()}</h2>
+                            </div>
+                            <div className="actions">
+                                <button className="btn-secondary" onClick={handleBack}>Back</button>
+                                <button className="btn-primary" onClick={handleNext}>Next Step</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Step 4: Schedule */}
+                    {step === 4 && (
                         <div className="step-content scheduler-step">
                             <h3>Schedule Date & Time</h3>
                             <div className="scheduler-grid">
@@ -212,9 +343,29 @@ const BookingPage = () => {
                                     </div>
 
                                     <div className="input-group">
-                                        <label><Clock size={18} /> Available Time Slots</label>
+                                        <label><Clock size={18} /> Morning Session</label>
                                         <div className="time-slots-grid">
-                                            {timeSlots.map(time => {
+                                            {morningSlots.map(time => {
+                                                const isAvailable = checkSlotAvailability(time)
+                                                return (
+                                                    <button
+                                                        key={time}
+                                                        className={`slot-btn ${formData.startTime === time ? 'selected' : ''} ${!isAvailable ? 'occupied' : ''}`}
+                                                        disabled={!isAvailable}
+                                                        onClick={() => setFormData({ ...formData, startTime: time })}
+                                                    >
+                                                        {time}
+                                                        {!isAvailable && <span className="occupied-badge">Booked</span>}
+                                                    </button>
+                                                )
+                                            })}
+                                        </div>
+                                    </div>
+
+                                    <div className="input-group">
+                                        <label><Clock size={18} /> Evening Session</label>
+                                        <div className="time-slots-grid">
+                                            {eveningSlots.map(time => {
                                                 const isAvailable = checkSlotAvailability(time)
                                                 return (
                                                     <button
@@ -283,35 +434,8 @@ const BookingPage = () => {
                         </div>
                     )}
 
-                    {step === 3 && (
-                        <div className="step-content">
-                            <h3>Property Details</h3>
-                            <div className="input-group">
-                                <label>Number of Bedrooms</label>
-                                <div className="room-selector">
-                                    {[2, 3, 4].map(num => (
-                                        <button
-                                            key={num}
-                                            className={formData.rooms === num ? 'selected' : ''}
-                                            onClick={() => setFormData({ ...formData, rooms: num })}
-                                        >
-                                            {num} Rooms
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="price-preview">
-                                <span>Estimated Price:</span>
-                                <h2>LKR {totalPrice.toLocaleString()}</h2>
-                            </div>
-                            <div className="actions">
-                                <button className="btn-secondary" onClick={handleBack}>Back</button>
-                                <button className="btn-primary" onClick={handleNext}>Next Step</button>
-                            </div>
-                        </div>
-                    )}
-
-                    {step === 4 && (
+                    {/* Step 5: Contact Details */}
+                    {step === 5 && (
                         <form onSubmit={handleSubmit} className="step-content">
                             <h3>Contact Details</h3>
                             <div className="input-group">
@@ -355,7 +479,8 @@ const BookingPage = () => {
                         </form>
                     )}
 
-                    {step === 5 && (
+                    {/* Step 6: Confirmation */}
+                    {step === 6 && (
                         <div className="step-content success">
                             <div className="success-icon">
                                 <CheckCircle size={64} />

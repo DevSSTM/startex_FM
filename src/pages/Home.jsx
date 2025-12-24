@@ -7,32 +7,47 @@ const Home = () => {
     const [services, setServices] = useState([])
 
     useEffect(() => {
-        const savedServices = JSON.parse(localStorage.getItem('services'))
-        if (savedServices && savedServices.length > 0) {
-            setServices(savedServices)
-        } else {
-            // Default services if storage is empty
-            const defaults = [
-                {
-                    id: 1,
-                    name: 'Normal Cleaning',
-                    basePrice: 15000,
-                    description: 'Daily/Weekly upkeep for a clean environment.',
-                    features: ['Floor Sweeping & Mopping', 'Washroom Sanitation', 'Surface Dusting', 'Kitchen Countertop Cleaning'],
-                    type: 'normal'
-                },
-                {
-                    id: 2,
-                    name: 'Deep Cleaning',
-                    basePrice: 20000,
-                    description: 'Detailed & thorough seasonal restoration.',
-                    features: ['Includes Normal Cleaning', 'Window & Glass Cleaning', 'Vacuuming Carpets & Sofas', 'Hard Stain Removal'],
-                    type: 'deep',
-                    featured: true
-                }
-            ]
-            setServices(defaults)
-        }
+        // Enforce the latest service definitions
+        const coreServices = [
+            {
+                id: 1,
+                name: 'Normal Cleaning',
+                basePrice: 15000,
+                description: 'Target: Daily/weekly apartment upkeep',
+                features: [
+                    'Floor sweeping & mopping',
+                    'Washroom cleaning (toilets, sinks, mirrors, floors)',
+                    'Dusting surfaces (tables, shelves, counters)',
+                    'Balcony sweeping & mopping',
+                    'Cobweb removal',
+                    'Kitchen countertop & external surface wipe-down',
+                    'Spot cleaning where required'
+                ],
+                type: 'normal'
+            },
+            {
+                id: 2,
+                name: 'Deep Cleaning',
+                basePrice: 20000,
+                description: 'Target: Weekly, Seasonal, move-in/move-out, post-renovation',
+                features: [
+                    'All tasks from Normal Cleaning PLUS:',
+                    'Deep cleaning of kitchen (appliances external, cabinets external)',
+                    'Polishing wood surfaces & furniture',
+                    'Window & glass panel cleaning',
+                    'Skirting, fans, light fixtures & switchboards detailed cleaning',
+                    'Vacuuming carpets, sofas, rugs',
+                    'Hard stain removal (best-effort basis)'
+                ],
+                type: 'deep',
+                featured: true
+            }
+        ]
+
+        setServices(coreServices)
+        // Update local storage to reflect these changes if we want to persist custom edits later,
+        // but for now, we want to force this "Golden Source" of truth.
+        localStorage.setItem('services', JSON.stringify(coreServices))
     }, [])
 
     return (
@@ -89,7 +104,7 @@ const Home = () => {
                         <div key={service.id} className={`service-card ${service.featured ? 'featured' : ''}`}>
                             {service.featured && <div className="popular-badge">Most Popular</div>}
                             <h3>{service.name}</h3>
-                            <p className="service-desc">{service.description}</p>
+                            {/* Target description removed as requested */}
                             <ul className="service-list">
                                 {service.features ? (
                                     service.features.map((feat, i) => (
