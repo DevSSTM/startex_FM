@@ -361,18 +361,65 @@ const BookingPage = () => {
                     {step === 4 && (
                         <div className="step-content scheduler-step">
                             <h3>Schedule Date & Time</h3>
-                            <div className="scheduler-grid">
-                                <div className="scheduler-left">
+                            <div className="scheduler-vertical" style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                                {/* 1. Calendar Top */}
+                                <div className="calendar-section" style={{ width: '100%' }}>
+                                    <div className="custom-calendar shadow-premium">
+                                        <div className="calendar-header">
+                                            <button onClick={prevMonth}><ChevronLeft size={20} /></button>
+                                            <h4>{format(currentMonth, 'MMMM yyyy')}</h4>
+                                            <button onClick={nextMonth}><ChevronRight size={20} /></button>
+                                        </div>
+                                        <div className="calendar-weekdays">
+                                            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => <span key={d}>{d}</span>)}
+                                        </div>
+                                        <div className="calendar-grid">
+                                            {calendarDays.map((day, i) => {
+                                                const dateStr = format(day, 'yyyy-MM-dd')
+                                                const isSelected = isSameDay(day, parse(formData.date, 'yyyy-MM-dd', new Date()))
+                                                const isCurrentMonth = isSameMonth(day, monthStart)
+                                                const isPast = isBefore(day, startOfToday())
+                                                const { morningCount, eveningCount } = getSessionCounts(dateStr)
+                                                const isBusy = morningCount >= 2 && eveningCount >= 2
+
+                                                return (
+                                                    <div
+                                                        key={i}
+                                                        className={`calendar-day ${isSelected ? 'selected' : ''} ${!isCurrentMonth ? 'other-month' : ''} ${isPast ? 'past' : ''} ${isBusy ? 'busy' : ''}`}
+                                                        onClick={() => handleDateClick(day)}
+                                                    >
+                                                        <span className="day-number">{format(day, 'd')}</span>
+                                                        {(morningCount + eveningCount) > 0 && !isPast && (
+                                                            <div className="dots">
+                                                                {Array(Math.min(morningCount + eveningCount, 3)).fill(0).map((_, idx) => <span key={idx} className="dot"></span>)}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+                                    </div>
+                                    <div className="calendar-legend" style={{ marginTop: '10px', justifyContent: 'center' }}>
+                                        <div className="legend-item"><span className="dot busy"></span> Busy</div>
+                                        <div className="legend-item"><span className="dot available"></span> Available</div>
+                                    </div>
+                                </div>
+
+                                {/* 2. Selected Date Display */}
+                                <div className="date-display-section" style={{ padding: '0 10px' }}>
                                     <div className="input-group">
                                         <label><CalendarIcon size={18} /> Selected Date</label>
-                                        <div className="selected-date-display">
+                                        <div className="selected-date-display" style={{ textAlign: 'center', background: '#e0f2fe', color: '#0369a1', borderColor: '#bae6fd' }}>
                                             {format(parse(formData.date, 'yyyy-MM-dd', new Date()), 'MMMM do, yyyy')}
                                         </div>
                                     </div>
+                                </div>
 
+                                {/* 3. Time Slots */}
+                                <div className="time-slots-section" style={{ padding: '0 10px' }}>
                                     <div className="input-group">
                                         <label><Clock size={18} /> Morning Session</label>
-                                        <div className="time-slots-grid">
+                                        <div className="time-slots-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))' }}>
                                             {morningSlots.map(time => {
                                                 const isAvailable = checkSlotAvailability(time)
                                                 return (
@@ -390,9 +437,9 @@ const BookingPage = () => {
                                         </div>
                                     </div>
 
-                                    <div className="input-group">
+                                    <div className="input-group" style={{ marginTop: '20px' }}>
                                         <label><Clock size={18} /> Evening Session</label>
-                                        <div className="time-slots-grid">
+                                        <div className="time-slots-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))' }}>
                                             {eveningSlots.map(time => {
                                                 const isAvailable = checkSlotAvailability(time)
                                                 return (
@@ -408,49 +455,6 @@ const BookingPage = () => {
                                                 )
                                             })}
                                         </div>
-                                    </div>
-                                </div>
-
-                                <div className="scheduler-right">
-                                    <div className="custom-calendar shadow-premium">
-                                        <div className="calendar-header">
-                                            <button onClick={prevMonth}><ChevronLeft size={20} /></button>
-                                            <h4>{format(currentMonth, 'MMMM yyyy')}</h4>
-                                            <button onClick={nextMonth}><ChevronRight size={20} /></button>
-                                        </div>
-                                        <div className="calendar-weekdays">
-                                            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => <span key={d}>{d}</span>)}
-                                        </div>
-                                        <div className="calendar-grid">
-                                            {calendarDays.map((day, i) => {
-                                                const dateStr = format(day, 'yyyy-MM-dd')
-                                                const isSelected = isSameDay(day, parse(formData.date, 'yyyy-MM-dd', new Date()))
-                                                const isCurrentMonth = isSameMonth(day, monthStart)
-                                                const isPast = isBefore(day, startOfToday())
-                                                const { morningCount, eveningCount } = getSessionCounts(dateStr)
-                                                const isBusy = morningCount >= 2 && eveningCount >= 2 // Full day booked only if BOTH sessions are full
-
-                                                return (
-                                                    <div
-                                                        key={i}
-                                                        className={`calendar-day ${isSelected ? 'selected' : ''} ${!isCurrentMonth ? 'other-month' : ''} ${isPast ? 'past' : ''} ${isBusy ? 'busy' : ''}`}
-                                                        onClick={() => handleDateClick(day)}
-                                                    >
-                                                        <span className="day-number">{format(day, 'd')}</span>
-                                                        {(morningCount + eveningCount) > 0 && !isPast && (
-                                                            <div className="dots">
-                                                                {/* Show dots based on total bookings, capped at 3 for UI */}
-                                                                {Array(Math.min(morningCount + eveningCount, 3)).fill(0).map((_, idx) => <span key={idx} className="dot"></span>)}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                )
-                                            })}
-                                        </div>
-                                    </div>
-                                    <div className="calendar-legend">
-                                        <div className="legend-item"><span className="dot busy"></span> Busy</div>
-                                        <div className="legend-item"><span className="dot available"></span> Available</div>
                                     </div>
                                 </div>
                             </div>
