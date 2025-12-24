@@ -444,8 +444,15 @@ const Admin = () => {
                                                 </td>
                                                 <td>
                                                     {booking.assignedVendor ? (
-                                                        <div className="vendor-badge">
-                                                            <UserCheck size={14} /> {booking.assignedVendor}
+                                                        <div
+                                                            className="vendor-badge"
+                                                            onClick={() => { setSelectedBookingForAlloc(booking); setShowAllocateModal(true); }}
+                                                            style={{ cursor: 'pointer', paddingRight: '8px' }}
+                                                            title="Click to reassign vendor"
+                                                        >
+                                                            <UserCheck size={14} />
+                                                            <span>{booking.assignedVendor}</span>
+                                                            <Edit size={12} style={{ marginLeft: '6px', opacity: 0.7 }} />
                                                         </div>
                                                     ) : (
                                                         booking.status !== 'cancelled' && (
@@ -874,7 +881,7 @@ const Admin = () => {
                                     </div>
                                     <div className="form-group">
                                         <label>NIC Number</label>
-                                        <input required type="text" value={vendorFormData.nic} onChange={e => setVendorFormData({ ...vendorFormData, nic: e.target.value })} />
+                                        <input type="text" value={vendorFormData.nic} onChange={e => setVendorFormData({ ...vendorFormData, nic: e.target.value })} />
                                     </div>
                                     <div className="form-group">
                                         <label>Phone Number</label>
@@ -890,7 +897,7 @@ const Admin = () => {
                                     </div>
                                     <div className="form-group full-width">
                                         <label>Address</label>
-                                        <textarea required value={vendorFormData.address} onChange={e => setVendorFormData({ ...vendorFormData, address: e.target.value })}></textarea>
+                                        <textarea value={vendorFormData.address} onChange={e => setVendorFormData({ ...vendorFormData, address: e.target.value })}></textarea>
                                     </div>
                                 </div>
                                 <div className="modal-footer">

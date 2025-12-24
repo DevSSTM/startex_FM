@@ -127,11 +127,13 @@ const BookingPage = () => {
         const dayBookings = existingBookings.filter(b => b.date === dateStr && b.status !== 'cancelled')
 
         const morningCount = dayBookings.filter(b => {
+            if (!b.startTime) return false
             const hour = parseInt(b.startTime.split(':')[0])
             return hour < 12 // Before 12:00 is Morning
         }).length
 
         const eveningCount = dayBookings.filter(b => {
+            if (!b.startTime) return false
             const hour = parseInt(b.startTime.split(':')[0])
             return hour >= 12 // 12:00 and after is Evening
         }).length
