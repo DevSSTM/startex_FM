@@ -188,11 +188,15 @@ const BookingPage = () => {
         const bookings = JSON.parse(localStorage.getItem('bookings') || '[]')
         const durationHours = parseInt(selected.duration) || 3
 
+        // Generate ID: Start from 1, or increment max existing ID (ignoring timestamps)
+        const existingIds = bookings.map(b => b.id).filter(id => id < 900000) // Filter out timestamp IDs
+        const nextId = existingIds.length > 0 ? Math.max(...existingIds) + 1 : 1
+
         const newBooking = {
             ...formData,
             serviceType: selected.name,
             addons: formData.addons.map(id => AVAILABLE_ADDONS.find(a => a.id === id)?.name).join(', '),
-            id: Date.now(),
+            id: nextId,
             status: 'pending',
             price: totalPrice,
             endTime: format(addHours(parse(formData.startTime, 'HH:mm', new Date()), durationHours), 'HH:mm'),

@@ -15,7 +15,6 @@ import {
     ChevronRight,
     Search,
     Calendar,
-    DollarSign,
     LayoutDashboard,
     FileText,
     Printer,
@@ -24,7 +23,14 @@ import {
     Edit,
     Camera,
     PrinterIcon,
-    X
+    X,
+    RotateCcw,
+    Eye,
+    Briefcase,
+    UserPlus,
+    UserCheck,
+    MapPin,
+    Phone
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import './Admin.css'
@@ -49,6 +55,8 @@ const Admin = () => {
     // Modal states
     const [showInvoice, setShowInvoice] = useState(false)
     const [selectedBooking, setSelectedBooking] = useState(null)
+    const [showViewModal, setShowViewModal] = useState(false)
+    const [viewBooking, setViewBooking] = useState(null)
     const [showServiceModal, setShowServiceModal] = useState(false)
     const [editingService, setEditingService] = useState(null)
     const [serviceFormData, setServiceFormData] = useState({
@@ -59,6 +67,19 @@ const Admin = () => {
         rooms: '2+',
         type: 'normal'
     })
+
+    // Vendor State
+    const [vendors, setVendors] = useState([])
+    const [showVendorModal, setShowVendorModal] = useState(false)
+    const [vendorFormData, setVendorFormData] = useState({
+        name: '',
+        phone: '',
+        nic: '',
+        address: '',
+        specialty: 'General'
+    })
+    const [showAllocateModal, setShowAllocateModal] = useState(false)
+    const [selectedBookingForAlloc, setSelectedBookingForAlloc] = useState(null)
 
     const invoiceRef = useRef()
 
@@ -185,6 +206,44 @@ const Admin = () => {
         b.phone.includes(searchTerm)
     )
 
+    // Vendor Handlers
+    const handleVendorSubmit = (e) => {
+        e.preventDefault()
+        const newVendor = { ...vendorFormData, id: Date.now(), joinedDate: new Date().toLocaleDateString() }
+        const updatedVendors = [...vendors, newVendor]
+        setVendors(updatedVendors)
+        localStorage.setItem('vendors', JSON.stringify(updatedVendors))
+        setShowVendorModal(false)
+        setVendorFormData({ name: '', phone: '', nic: '', address: '', specialty: 'General' })
+    }
+
+    const deleteVendor = (id) => {
+        if (confirm('Remove this vendor?')) {
+            const updated = vendors.filter(v => v.id !== id)
+            setVendors(updated)
+            localStorage.setItem('vendors', JSON.stringify(updated))
+        }
+    }
+
+    const handleAllocate = (vendorId) => {
+        const vendor = vendors.find(v => v.id === vendorId)
+        const updatedBookings = bookings.map(b =>
+            b.id === selectedBookingForAlloc.id ? { ...b, assignedVendor: vendor.name, vendorId: vendor.id } : b
+        )
+        // Re-sort to maintain order if needed, or just update
+        const updatedOrdered = [...updatedBookings].reverse() // simplistic re-sort if bookings was reversed originally? 
+        // Actually bookings state is already reversed in UI but stored usually normal. 
+        // Let's just update state and strictly sync.
+
+        // Wait, bookings state is displayed as sliced/reversed. "updated" map is on 'bookings'.
+        // Let's just setBookings with the mapped result.
+        setBookings(updatedBookings)
+        localStorage.setItem('bookings', JSON.stringify(updatedBookings.slice().reverse())) // Assuming storage is chronological
+
+        setShowAllocateModal(false)
+        setSelectedBookingForAlloc(null)
+    }
+
     if (!isAuthenticated) {
         return (
             <div className="login-container">
@@ -254,6 +313,13 @@ const Admin = () => {
                         <Settings size={20} />
                         <span>Services</span>
                     </button>
+                    <button
+                        className={activeTab === 'vendors' ? 'active' : ''}
+                        onClick={() => setActiveTab('vendors')}
+                    >
+                        <Briefcase size={20} />
+                        <span>Vendors</span>
+                    </button>
 
                     <div className="sidebar-divider"></div>
 
@@ -268,7 +334,11 @@ const Admin = () => {
             <main className="admin-main">
                 <header className="admin-top-bar no-print">
                     <div className="page-info">
-                        <h1>{activeTab === 'bookings' ? 'Bookings Overview' : 'Service Management'}</h1>
+                        <h1>
+                            {activeTab === 'bookings' && 'Bookings Overview'}
+                            {activeTab === 'services' && 'Service Management'}
+                            {activeTab === 'vendors' && 'Vendor Management'}
+                        </h1>
                         <p>Welcome back, Admin</p>
                     </div>
 
@@ -343,9 +413,8 @@ const Admin = () => {
                                         <tr>
                                             <th>ID</th>
                                             <th>Customer Details</th>
-                                            <th>Service Details</th>
-                                            <th>Schedule</th>
                                             <th>Value</th>
+                                            <th>Allocated Vendor</th>
                                             <th>Status</th>
                                             <th style={{ textAlign: 'right' }}>Action</th>
                                         </tr>
@@ -353,7 +422,7 @@ const Admin = () => {
                                     <tbody>
                                         {filteredBookings.map((booking, index) => (
                                             <tr key={booking.id}>
-                                                <td className="id-cell">#{index + 1001}</td>
+                                                <td className="id-cell">#{booking.id.toString().padStart(3, '0')}</td>
                                                 <td>
                                                     <div className="user-info">
                                                         <div className="user-avatar">{booking.name.charAt(0)}</div>
@@ -369,21 +438,22 @@ const Admin = () => {
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <div className="service-badge">
-                                                        {booking.serviceType.replace('-', ' ').toUpperCase()}
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <div className="schedule-cell">
-                                                        <div className="date-tag"><Calendar size={12} /> {booking.date}</div>
-                                                        <div className="time-tag"><Clock size={12} /> {booking.startTime}</div>
-                                                    </div>
-                                                </td>
-                                                <td>
                                                     <div className="price-tag">
-                                                        <DollarSign size={14} />
-                                                        {booking.price.toLocaleString()}
+                                                        LKR {booking.price.toLocaleString()}
                                                     </div>
+                                                </td>
+                                                <td>
+                                                    {booking.assignedVendor ? (
+                                                        <div className="vendor-badge">
+                                                            <UserCheck size={14} /> {booking.assignedVendor}
+                                                        </div>
+                                                    ) : (
+                                                        booking.status !== 'cancelled' && (
+                                                            <button className="btn-assign" onClick={() => { setSelectedBookingForAlloc(booking); setShowAllocateModal(true); }}>
+                                                                <UserPlus size={14} /> Assign
+                                                            </button>
+                                                        )
+                                                    )}
                                                 </td>
                                                 <td>
                                                     <span className={`status-badge ${booking.status}`}>
@@ -392,6 +462,9 @@ const Admin = () => {
                                                 </td>
                                                 <td>
                                                     <div className="action-row">
+                                                        <button className="icon-btn view" onClick={() => { setViewBooking(booking); setShowViewModal(true); }} title="View Details">
+                                                            <Eye size={18} />
+                                                        </button>
                                                         <button className="icon-btn invoice" onClick={() => handleGenerateInvoice(booking)} title="Invoice">
                                                             <FileText size={18} />
                                                         </button>
@@ -408,6 +481,11 @@ const Admin = () => {
                                                         {booking.status !== 'cancelled' && booking.status !== 'completed' && (
                                                             <button className="icon-btn cancel" onClick={() => updateStatus(booking.id, 'cancelled')} title="Reject">
                                                                 <XCircle size={18} />
+                                                            </button>
+                                                        )}
+                                                        {(booking.status === 'cancelled' || booking.status === 'completed') && (
+                                                            <button className="icon-btn redo" onClick={() => updateStatus(booking.id, 'pending')} title="Redo Order">
+                                                                <RotateCcw size={18} />
                                                             </button>
                                                         )}
                                                     </div>
@@ -429,7 +507,7 @@ const Admin = () => {
                             </div>
                         </div>
                     </div>
-                ) : (
+                ) : activeTab === 'services' ? (
                     <div className="services-mgt-container no-print">
                         <div className="section-header">
                             <div className="header-text">
@@ -472,195 +550,386 @@ const Admin = () => {
                             ))}
                         </div>
                     </div>
+                ) : (
+                    <div className="vendors-container no-print">
+                        <div className="section-header">
+                            <div className="header-text">
+                                <h2>Registered Vendors</h2>
+                                <p>Manage your cleaning staff database</p>
+                            </div>
+                            <button className="btn-primary" onClick={() => setShowVendorModal(true)}>
+                                <UserPlus size={18} /> Add Vendor
+                            </button>
+                        </div>
+                        <div className="vendors-grid">
+                            {vendors.map(vendor => (
+                                <div key={vendor.id} className="vendor-card glass-card">
+                                    <div className="vendor-header">
+                                        <div className="vendor-avatar">
+                                            {vendor.name.charAt(0)}
+                                        </div>
+                                        <div className="vendor-meta">
+                                            <h4>{vendor.name}</h4>
+                                            <span className="vendor-nic">NIC: {vendor.nic}</span>
+                                        </div>
+                                        <button className="icon-btn cancel" onClick={() => deleteVendor(vendor.id)}><Trash2 size={16} /></button>
+                                    </div>
+                                    <div className="vendor-body">
+                                        <div className="v-item"><Phone size={14} /> {vendor.phone}</div>
+                                        <div className="v-item"><MapPin size={14} /> {vendor.address}</div>
+                                        <div className="v-specialty"><Sparkles size={14} /> {vendor.specialty}</div>
+                                    </div>
+                                    <div className="vendor-footer">
+                                        <span className="v-date">Joined {vendor.joinedDate}</span>
+                                    </div>
+                                </div>
+                            ))}
+                            {vendors.length === 0 && (
+                                <div className="empty-state">
+                                    <p>No vendors registered yet.</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 )}
-            </main>
+            </main >
 
             {/* Service Modal */}
-            {showServiceModal && (
-                <div className="modal-overlay no-print">
-                    <div className="modal-content glass-card service-modal">
-                        <div className="modal-header">
-                            <h2>{editingService ? 'Edit Package' : 'New Cleaning Package'}</h2>
-                            <button className="close-btn" onClick={() => setShowServiceModal(false)}><X /></button>
-                        </div>
-                        <form onSubmit={handleServiceSubmit} className="service-form">
-                            <div className="form-grid">
-                                <div className="form-group">
-                                    <label>Package Name</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        value={serviceFormData.name}
-                                        onChange={(e) => setServiceFormData({ ...serviceFormData, name: e.target.value })}
-                                        placeholder="e.g. Eco Cleaning"
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label>Base Price (LKR)</label>
-                                    <input
-                                        type="number"
-                                        required
-                                        value={serviceFormData.basePrice}
-                                        onChange={(e) => setServiceFormData({ ...serviceFormData, basePrice: e.target.value })}
-                                        placeholder="15000"
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label>Estimated Duration</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        value={serviceFormData.duration}
-                                        onChange={(e) => setServiceFormData({ ...serviceFormData, duration: e.target.value })}
-                                        placeholder="3-4 Hours"
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label>Room Category</label>
-                                    <select
-                                        value={serviceFormData.rooms}
-                                        onChange={(e) => setServiceFormData({ ...serviceFormData, rooms: e.target.value })}
-                                    >
-                                        <option value="2+">2+ Rooms</option>
-                                        <option value="All Areas">All Areas</option>
-                                        <option value="Custom">Custom Scope</option>
-                                    </select>
-                                </div>
-                                <div className="form-group full-width">
-                                    <label>Description</label>
-                                    <textarea
-                                        required
-                                        value={serviceFormData.description}
-                                        onChange={(e) => setServiceFormData({ ...serviceFormData, description: e.target.value })}
-                                        placeholder="Describe the inclusions..."
-                                    ></textarea>
-                                </div>
-                                <div className="form-group">
-                                    <label>Visual Style</label>
-                                    <div className="radio-group">
-                                        <label>
-                                            <input
-                                                type="radio"
-                                                name="type"
-                                                checked={serviceFormData.type === 'normal'}
-                                                onChange={() => setServiceFormData({ ...serviceFormData, type: 'normal' })}
-                                            /> Normal
-                                        </label>
-                                        <label>
-                                            <input
-                                                type="radio"
-                                                name="type"
-                                                checked={serviceFormData.type === 'deep'}
-                                                onChange={() => setServiceFormData({ ...serviceFormData, type: 'deep' })}
-                                            /> Featured (Premium)
-                                        </label>
+            {
+                showServiceModal && (
+                    <div className="modal-overlay no-print">
+                        <div className="modal-content glass-card service-modal">
+                            <div className="modal-header">
+                                <h2>{editingService ? 'Edit Package' : 'New Cleaning Package'}</h2>
+                                <button className="close-btn" onClick={() => setShowServiceModal(false)}><X /></button>
+                            </div>
+                            <form onSubmit={handleServiceSubmit} className="service-form">
+                                <div className="form-grid">
+                                    <div className="form-group">
+                                        <label>Package Name</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={serviceFormData.name}
+                                            onChange={(e) => setServiceFormData({ ...serviceFormData, name: e.target.value })}
+                                            placeholder="e.g. Eco Cleaning"
+                                        />
                                     </div>
+                                    <div className="form-group">
+                                        <label>Base Price (LKR)</label>
+                                        <input
+                                            type="number"
+                                            required
+                                            value={serviceFormData.basePrice}
+                                            onChange={(e) => setServiceFormData({ ...serviceFormData, basePrice: e.target.value })}
+                                            placeholder="15000"
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Estimated Duration</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={serviceFormData.duration}
+                                            onChange={(e) => setServiceFormData({ ...serviceFormData, duration: e.target.value })}
+                                            placeholder="3-4 Hours"
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Room Category</label>
+                                        <select
+                                            value={serviceFormData.rooms}
+                                            onChange={(e) => setServiceFormData({ ...serviceFormData, rooms: e.target.value })}
+                                        >
+                                            <option value="2+">2+ Rooms</option>
+                                            <option value="All Areas">All Areas</option>
+                                            <option value="Custom">Custom Scope</option>
+                                        </select>
+                                    </div>
+                                    <div className="form-group full-width">
+                                        <label>Description</label>
+                                        <textarea
+                                            required
+                                            value={serviceFormData.description}
+                                            onChange={(e) => setServiceFormData({ ...serviceFormData, description: e.target.value })}
+                                            placeholder="Describe the inclusions..."
+                                        ></textarea>
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Visual Style</label>
+                                        <div className="radio-group">
+                                            <label>
+                                                <input
+                                                    type="radio"
+                                                    name="type"
+                                                    checked={serviceFormData.type === 'normal'}
+                                                    onChange={() => setServiceFormData({ ...serviceFormData, type: 'normal' })}
+                                                /> Normal
+                                            </label>
+                                            <label>
+                                                <input
+                                                    type="radio"
+                                                    name="type"
+                                                    checked={serviceFormData.type === 'deep'}
+                                                    onChange={() => setServiceFormData({ ...serviceFormData, type: 'deep' })}
+                                                /> Featured (Premium)
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="modal-footer">
+                                    <button type="button" className="btn-secondary" onClick={() => setShowServiceModal(false)}>Cancel</button>
+                                    <button type="submit" className="btn-primary">
+                                        {editingService ? 'Save Changes' : 'Create Package'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )
+            }
+
+            {/* Invoice Modal */}
+            {
+                showInvoice && selectedBooking && (
+                    <div className="invoice-overlay">
+                        <div className="invoice-actions no-print">
+                            <button className="btn-print" onClick={handlePrint}><Printer size={18} /> Print Bill</button>
+                            <button className="btn-close" onClick={() => setShowInvoice(false)}><X size={20} /></button>
+                        </div>
+                        <div className="invoice-paper" id="invoice-bill">
+                            <header className="invoice-header">
+                                <div className="invoice-logo">
+                                    <Sparkles className="logo-sparkle" />
+                                    <div>
+                                        <h1>STRATEX</h1>
+                                        <span>Strategizing Facility Excellence</span>
+                                    </div>
+                                </div>
+                                <div className="invoice-meta">
+                                    <h2>INVOICE</h2>
+                                    <p>#INV-{selectedBooking.id.toString().slice(-6)}</p>
+                                    <p>Date: {new Date().toLocaleDateString()}</p>
+                                </div>
+                            </header>
+
+                            <div className="invoice-billing">
+                                <div className="bill-to">
+                                    <h3>BILL TO</h3>
+                                    <strong>{selectedBooking.name}</strong>
+                                    <p>{selectedBooking.address}</p>
+                                    <p>{selectedBooking.phone}</p>
+                                </div>
+                                <div className="bill-from">
+                                    <h3>FROM</h3>
+                                    <strong>STRATEX FACILITY MGT</strong>
+                                    <p>123 Clean St, Colombo, SL</p>
+                                    <p>+94 11 234 5678</p>
+                                </div>
+                            </div>
+
+                            <table className="invoice-table">
+                                <thead>
+                                    <tr>
+                                        <th>SERVICE DESCRIPTION</th>
+                                        <th>SCHEDULE</th>
+                                        <th>ROOMS</th>
+                                        <th style={{ textAlign: 'right' }}>AMOUNT</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <strong>{selectedBooking.serviceType.toUpperCase()} CLEANING</strong>
+                                            <p>Professional professional cleaning service</p>
+                                        </td>
+                                        <td>
+                                            {selectedBooking.date}<br />
+                                            <small>{selectedBooking.startTime} - {selectedBooking.endTime}</small>
+                                        </td>
+                                        <td>{selectedBooking.rooms} Rooms</td>
+                                        <td style={{ textAlign: 'right' }}>LKR {selectedBooking.price.toLocaleString()}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <div className="invoice-summary">
+                                <div className="summary-row">
+                                    <span>Subtotal</span>
+                                    <span>LKR {selectedBooking.price.toLocaleString()}</span>
+                                </div>
+                                <div className="summary-row">
+                                    <span>Tax (0%)</span>
+                                    <span>LKR 0</span>
+                                </div>
+                                <div className="summary-row grand-total">
+                                    <span>Amount Due</span>
+                                    <span>LKR {selectedBooking.price.toLocaleString()}</span>
+                                </div>
+                            </div>
+
+                            <footer className="invoice-footer">
+                                <div className="payment-info">
+                                    <h3>PAYMENT METHOD</h3>
+                                    <p>Bank Transfer / Cash on Delivery</p>
+                                    <p>Bank: HNB | Account: 085020385948</p>
+                                </div>
+                                <div className="thanks-msg">
+                                    <p>Thank you for choosing Stratex!</p>
+                                    <div className="stamp">PAID</div>
+                                </div>
+                            </footer>
+                        </div>
+                    </div>
+                )
+            }
+
+            {/* View Details Modal */}
+            {
+                showViewModal && viewBooking && (
+                    <div className="modal-overlay no-print">
+                        <div className="modal-content glass-card service-modal">
+                            <div className="modal-header">
+                                <h2>Booking Details #{viewBooking.id.toString().padStart(3, '0')}</h2>
+                                <button className="close-btn" onClick={() => setShowViewModal(false)}><X /></button>
+                            </div>
+                            <div className="view-details-content">
+                                <div className="detail-section">
+                                    <h3>Customer Information</h3>
+                                    <div className="detail-grid">
+                                        <div className="detail-item">
+                                            <label>Name</label>
+                                            <p>{viewBooking.name}</p>
+                                        </div>
+                                        <div className="detail-item">
+                                            <label>Phone</label>
+                                            <p>{viewBooking.phone}</p>
+                                        </div>
+                                        <div className="detail-item full-width">
+                                            <label>Address</label>
+                                            <p>{viewBooking.address}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <hr className="divider" />
+
+                                <div className="detail-section">
+                                    <h3>Service Order</h3>
+                                    <div className="detail-grid">
+                                        <div className="detail-item">
+                                            <label>Service Type</label>
+                                            <p className="highlight">{viewBooking.serviceType}</p>
+                                        </div>
+                                        <div className="detail-item">
+                                            <label>Date & Time</label>
+                                            <p>{viewBooking.date} at {viewBooking.startTime}</p>
+                                        </div>
+                                        <div className="detail-item">
+                                            <label>Rooms</label>
+                                            <p>{viewBooking.rooms}</p>
+                                        </div>
+                                        <div className="detail-item">
+                                            <label>Duration</label>
+                                            <p>Approx {viewBooking.endTime ? `${parseInt(viewBooking.endTime) - parseInt(viewBooking.startTime)} Hours` : 'Standard'}</p>
+                                        </div>
+                                        <div className="detail-item full-width">
+                                            <label>Add-ons</label>
+                                            <p>{viewBooking.addons || 'None'}</p>
+                                        </div>
+                                        <div className="detail-item full-width">
+                                            <label>Remarks</label>
+                                            <p>{viewBooking.remarks || 'None'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="detail-total">
+                                    <span>Total Amount</span>
+                                    <h2>LKR {viewBooking.price.toLocaleString()}</h2>
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className="btn-secondary" onClick={() => setShowServiceModal(false)}>Cancel</button>
-                                <button type="submit" className="btn-primary">
-                                    {editingService ? 'Save Changes' : 'Create Package'}
-                                </button>
+                                <button className="btn-secondary" onClick={() => setShowViewModal(false)}>Close</button>
                             </div>
-                        </form>
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
-            {/* Invoice Modal */}
-            {showInvoice && selectedBooking && (
-                <div className="invoice-overlay">
-                    <div className="invoice-actions no-print">
-                        <button className="btn-print" onClick={handlePrint}><Printer size={18} /> Print Bill</button>
-                        <button className="btn-close" onClick={() => setShowInvoice(false)}><X size={20} /></button>
-                    </div>
-                    <div className="invoice-paper" id="invoice-bill">
-                        <header className="invoice-header">
-                            <div className="invoice-logo">
-                                <Sparkles className="logo-sparkle" />
-                                <div>
-                                    <h1>STRATEX</h1>
-                                    <span>Strategizing Facility Excellence</span>
+            {/* Vendor Modal */}
+            {
+                showVendorModal && (
+                    <div className="modal-overlay no-print">
+                        <div className="modal-content glass-card">
+                            <div className="modal-header">
+                                <h2>Register New Vendor</h2>
+                                <button className="close-btn" onClick={() => setShowVendorModal(false)}><X /></button>
+                            </div>
+                            <form onSubmit={handleVendorSubmit} className="service-form">
+                                <div className="form-grid">
+                                    <div className="form-group">
+                                        <label>Full Name</label>
+                                        <input required type="text" value={vendorFormData.name} onChange={e => setVendorFormData({ ...vendorFormData, name: e.target.value })} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>NIC Number</label>
+                                        <input required type="text" value={vendorFormData.nic} onChange={e => setVendorFormData({ ...vendorFormData, nic: e.target.value })} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Phone Number</label>
+                                        <input required type="tel" value={vendorFormData.phone} onChange={e => setVendorFormData({ ...vendorFormData, phone: e.target.value })} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Specialty</label>
+                                        <select value={vendorFormData.specialty} onChange={e => setVendorFormData({ ...vendorFormData, specialty: e.target.value })}>
+                                            <option value="General">General Cleaning</option>
+                                            <option value="Deep Clean">Deep Cleaning Specialist</option>
+                                            <option value="Glass">Glass / Windows</option>
+                                        </select>
+                                    </div>
+                                    <div className="form-group full-width">
+                                        <label>Address</label>
+                                        <textarea required value={vendorFormData.address} onChange={e => setVendorFormData({ ...vendorFormData, address: e.target.value })}></textarea>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="invoice-meta">
-                                <h2>INVOICE</h2>
-                                <p>#INV-{selectedBooking.id.toString().slice(-6)}</p>
-                                <p>Date: {new Date().toLocaleDateString()}</p>
-                            </div>
-                        </header>
-
-                        <div className="invoice-billing">
-                            <div className="bill-to">
-                                <h3>BILL TO</h3>
-                                <strong>{selectedBooking.name}</strong>
-                                <p>{selectedBooking.address}</p>
-                                <p>{selectedBooking.phone}</p>
-                            </div>
-                            <div className="bill-from">
-                                <h3>FROM</h3>
-                                <strong>STRATEX FACILITY MGT</strong>
-                                <p>123 Clean St, Colombo, SL</p>
-                                <p>+94 11 234 5678</p>
-                            </div>
+                                <div className="modal-footer">
+                                    <button type="submit" className="btn-primary">Register Vendor</button>
+                                </div>
+                            </form>
                         </div>
-
-                        <table className="invoice-table">
-                            <thead>
-                                <tr>
-                                    <th>SERVICE DESCRIPTION</th>
-                                    <th>SCHEDULE</th>
-                                    <th>ROOMS</th>
-                                    <th style={{ textAlign: 'right' }}>AMOUNT</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <strong>{selectedBooking.serviceType.toUpperCase()} CLEANING</strong>
-                                        <p>Professional professional cleaning service</p>
-                                    </td>
-                                    <td>
-                                        {selectedBooking.date}<br />
-                                        <small>{selectedBooking.startTime} - {selectedBooking.endTime}</small>
-                                    </td>
-                                    <td>{selectedBooking.rooms} Rooms</td>
-                                    <td style={{ textAlign: 'right' }}>LKR {selectedBooking.price.toLocaleString()}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        <div className="invoice-summary">
-                            <div className="summary-row">
-                                <span>Subtotal</span>
-                                <span>LKR {selectedBooking.price.toLocaleString()}</span>
-                            </div>
-                            <div className="summary-row">
-                                <span>Tax (0%)</span>
-                                <span>LKR 0</span>
-                            </div>
-                            <div className="summary-row grand-total">
-                                <span>Amount Due</span>
-                                <span>LKR {selectedBooking.price.toLocaleString()}</span>
-                            </div>
-                        </div>
-
-                        <footer className="invoice-footer">
-                            <div className="payment-info">
-                                <h3>PAYMENT METHOD</h3>
-                                <p>Bank Transfer / Cash on Delivery</p>
-                                <p>Bank: HNB | Account: 085020385948</p>
-                            </div>
-                            <div className="thanks-msg">
-                                <p>Thank you for choosing Stratex!</p>
-                                <div className="stamp">PAID</div>
-                            </div>
-                        </footer>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+
+            {/* Allocate Modal */}
+            {
+                showAllocateModal && selectedBookingForAlloc && (
+                    <div className="modal-overlay no-print">
+                        <div className="modal-content glass-card" style={{ maxWidth: '500px' }}>
+                            <div className="modal-header">
+                                <h2>Assign Vendor</h2>
+                                <button className="close-btn" onClick={() => setShowAllocateModal(false)}><X /></button>
+                            </div>
+                            <div className="allocate-list">
+                                <p style={{ marginBottom: '20px', color: '#64748b' }}>Select a registered vendor to assign to <strong>Order #{selectedBookingForAlloc.id}</strong></p>
+                                {vendors.map(vendor => (
+                                    <div key={vendor.id} className="vendor-create-card" onClick={() => handleAllocate(vendor.id)}>
+                                        <div className="vendor-avatar small">{vendor.name.charAt(0)}</div>
+                                        <div>
+                                            <h4>{vendor.name}</h4>
+                                            <span>{vendor.specialty}</span>
+                                        </div>
+                                        <ChevronRight size={16} style={{ marginLeft: 'auto' }} />
+                                    </div>
+                                ))}
+                                {vendors.length === 0 && <p>No vendors found. Please register vendors first.</p>}
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+        </div >
     )
 }
 
