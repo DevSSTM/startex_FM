@@ -1,0 +1,185 @@
+.nav-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    padding: 24px 20px;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+    /* Allows clicking through the padding area if needed, but we'll re-enable for navbar */
+}
+
+.navbar {
+    pointer-events: auto;
+    width: 100%;
+    max-width: 1200px;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 100px;
+    /* Pill shape */
+    padding: 12px 16px;
+    box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.05),
+        0 10px 30px -10px rgba(0, 26, 110, 0.15);
+    transition: var(--transition);
+}
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 12px;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.nav-logo {
+    height: 44px;
+    width: auto;
+    mix-blend-mode: multiply;
+    /* Remove white background */
+    filter: contrast(1.1);
+    transition: var(--transition);
+}
+
+.nav-links-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+}
+
+.nav-links {
+    display: flex;
+    gap: 32px;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.03);
+    padding: 8px 12px;
+    border-radius: 100px;
+}
+
+.nav-links a {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--primary);
+    padding: 8px 16px;
+    border-radius: 100px;
+    transition: var(--transition);
+    opacity: 0.7;
+}
+
+.nav-links a:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.nav-links a.active {
+    background: white;
+    color: var(--primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    opacity: 1;
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+}
+
+.cta-button {
+    background: var(--primary);
+    color: white !important;
+    padding: 12px 24px;
+    border-radius: 100px;
+    font-weight: 800;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 10px 20px -5px rgba(0, 26, 110, 0.3);
+}
+
+.cta-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 25px -5px rgba(0, 26, 110, 0.4);
+    background: var(--primary-dark);
+}
+
+.menu-btn {
+    display: none;
+    background: var(--primary);
+    color: white;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+}
+
+.mobile-menu {
+    position: absolute;
+    top: calc(100% + 15px);
+    left: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    padding: 24px;
+    border-radius: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    z-index: 1001;
+    animation: slideUpIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUpIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.mobile-menu a {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--primary);
+    padding: 16px 24px;
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 20px;
+    text-align: center;
+}
+
+.mobile-cta {
+    background: var(--primary) !important;
+    color: white !important;
+}
+
+@media (max-width: 992px) {
+    .nav-links-wrapper {
+        display: none;
+    }
+
+    .menu-btn {
+        display: flex;
+    }
+
+    .navbar {
+        max-width: 100%;
+        border-radius: 100px;
+    }
+}

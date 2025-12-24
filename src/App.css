@@ -1,0 +1,123 @@
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+}
+
+/* Common Button Styles */
+.btn-primary {
+  background: var(--primary);
+  color: white;
+  padding: 14px 32px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: var(--transition);
+}
+
+.btn-primary:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 20px -10px rgba(0, 26, 110, 0.4);
+}
+
+.btn-secondary {
+  background: white;
+  color: var(--primary);
+  border: 2px solid #e2e8f0;
+  padding: 12px 28px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.btn-secondary:hover {
+  border-color: var(--secondary);
+  background: #f8fafc;
+}
+
+.btn-whatsapp {
+  background: #25D366;
+  color: white;
+  padding: 14px 28px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  box-shadow: 0 10px 20px -5px rgba(37, 211, 102, 0.3);
+}
+
+.btn-whatsapp:hover {
+  background: #20BA5A;
+  transform: scale(1.02);
+}
+
+.btn-text {
+  background: none;
+  color: var(--text-grey);
+  font-weight: 600;
+  padding: 8px 16px;
+}
+
+.btn-text:hover {
+  color: var(--primary);
+}
+
+/* Status Badges */
+.status-pill {
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-pill.pending {
+  background: #fff7ed;
+  color: #9a3412;
+}
+
+.status-pill.confirmed {
+  background: #eff6ff;
+  color: #1e40af;
+}
+
+.status-pill.completed {
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.status-pill.cancelled {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+/* Global Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-up {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
