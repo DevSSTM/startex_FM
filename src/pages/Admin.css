@@ -807,6 +807,11 @@
     border-bottom: 1px solid #f1f5f9;
 }
 
+.table-actions {
+    display: flex;
+    gap: 12px;
+}
+
 .scrollable-table {
     overflow-x: auto;
 }

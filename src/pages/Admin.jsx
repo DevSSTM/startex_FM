@@ -244,6 +244,14 @@ const Admin = () => {
         setSelectedBookingForAlloc(null)
     }
 
+    const clearAllBookings = () => {
+        if (confirm('Are you sure you want to delete ALL booking records? This cannot be undone.')) {
+            localStorage.removeItem('bookings')
+            setBookings([])
+            setStats({ pending: 0, confirmed: 0, completed: 0, cancelled: 0 })
+        }
+    }
+
     if (!isAuthenticated) {
         return (
             <div className="login-container">
@@ -405,6 +413,13 @@ const Admin = () => {
                                 <h2>Recent Reservations</h2>
                                 <div className="table-actions">
                                     <button className="btn-secondary">Export Data</button>
+                                    <button
+                                        className="btn-secondary"
+                                        onClick={clearAllBookings}
+                                        style={{ backgroundColor: '#fef2f2', color: '#dc2626', borderColor: '#fee2e2' }}
+                                    >
+                                        Clear Bookings
+                                    </button>
                                 </div>
                             </div>
                             <div className="scrollable-table">

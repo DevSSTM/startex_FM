@@ -19,6 +19,7 @@ const BookingPage = () => {
         name: '',
         phone: '',
         address: '',
+        preferredTime: '',
         remarks: ''
     })
 
@@ -120,7 +121,8 @@ const BookingPage = () => {
 
     // Availability Logic
     const morningSlots = ['07:00', '08:00', '09:00']
-    const eveningSlots = ['12:00', '13:00', '14:00']
+    const afternoonSlots = ['10:00', '11:00', '12:00']
+    const eveningSlots = ['13:00', '14:00', '15:00']
 
     // Helper to count bookings per session for a given date
     const getSessionCounts = (dateStr) => {
@@ -129,29 +131,43 @@ const BookingPage = () => {
         const morningCount = dayBookings.filter(b => {
             if (!b.startTime) return false
             const hour = parseInt(b.startTime.split(':')[0])
-            return hour < 12 // Before 12:00 is Morning
+            return hour >= 7 && hour < 10
+        }).length
+
+        const afternoonCount = dayBookings.filter(b => {
+            if (!b.startTime) return false
+            const hour = parseInt(b.startTime.split(':')[0])
+            return hour >= 10 && hour < 13
         }).length
 
         const eveningCount = dayBookings.filter(b => {
             if (!b.startTime) return false
             const hour = parseInt(b.startTime.split(':')[0])
-            return hour >= 12 // 12:00 and after is Evening
+            return hour >= 13
         }).length
 
-        return { morningCount, eveningCount }
+        return { morningCount, afternoonCount, eveningCount }
     }
 
-    const checkSlotAvailability = (time) => {
-        const { morningCount, eveningCount } = getSessionCounts(formData.date)
-        const hour = parseInt(time.split(':')[0])
-        const isMorning = hour < 12
 
-        // Session-based availability: Max 2 bookings per session
-        // Note: We allow overlapping times (e.g. two people can book 8:00)
-        // The constraint is purely on the total count for the session.
-        if (isMorning) {
+
+    const checkSlotAvailability = (time) => {
+        const { morningCount, afternoonCount, eveningCount } = getSessionCounts(formData.date)
+        const hour = parseInt(time.split(':')[0])
+
+        // Morning (7-9)
+        if (hour >= 7 && hour < 10) {
             return morningCount < 2
-        } else {
+        }
+        // Afternoon (10-12)
+        else if (hour >= 10 && hour < 13) {
+            // "if two booking come from morning session afternoon session need dissapear"
+            // This implies Afternoon is unavailable if Morning is full.
+            // Also depends on its own capacity.
+            return afternoonCount < 2 && morningCount < 2
+        }
+        // Evening (13+)
+        else {
             return eveningCount < 2
         }
     }
@@ -223,6 +239,7 @@ const BookingPage = () => {
             `*Customer:* ${formData.name}\n` +
             `*Phone:* ${formData.phone}\n` +
             `*Address:* ${formData.address}\n` +
+            `*Preferred Time:* ${formData.preferredTime || 'Standard Slot'}\n` +
             `*Remarks:* ${formData.remarks || 'None'}`
 
         const encoded = encodeURIComponent(message)
@@ -379,8 +396,10 @@ const BookingPage = () => {
                                                 const isSelected = isSameDay(day, parse(formData.date, 'yyyy-MM-dd', new Date()))
                                                 const isCurrentMonth = isSameMonth(day, monthStart)
                                                 const isPast = isBefore(day, startOfToday())
-                                                const { morningCount, eveningCount } = getSessionCounts(dateStr)
-                                                const isBusy = morningCount >= 2 && eveningCount >= 2
+                                                const { morningCount, eveningCount } = getSessionCounts(dateStr) // Note: getSessionCounts now returns afternoonCount too, but we just need to check if ANY session has space?
+                                                // Simplified busy logic for calendar dots:
+                                                const totalBookings = morningCount + eveningCount + getSessionCounts(dateStr).afternoonCount
+                                                const isBusy = totalBookings >= 6 // 3 sessions * 2 capacity = 6 total capacity
 
                                                 return (
                                                     <div
@@ -417,6 +436,7 @@ const BookingPage = () => {
 
                                 {/* 3. Time Slots */}
                                 <div className="time-slots-section" style={{ padding: '0 10px' }}>
+                                    {/* Morning */}
                                     <div className="input-group">
                                         <label><Clock size={18} /> Morning Session</label>
                                         <div className="time-slots-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))' }}>
@@ -429,7 +449,7 @@ const BookingPage = () => {
                                                         disabled={!isAvailable}
                                                         onClick={() => setFormData({ ...formData, startTime: time })}
                                                     >
-                                                        {time}
+                                                        {time} - {parseInt(time.split(':')[0])}:30
                                                         {!isAvailable && <span className="occupied-badge">Booked</span>}
                                                     </button>
                                                 )
@@ -437,6 +457,30 @@ const BookingPage = () => {
                                         </div>
                                     </div>
 
+                                    {/* Afternoon - Hidden if Morning is full (2 bookings) */}
+                                    {getSessionCounts(formData.date).morningCount < 2 && (
+                                        <div className="input-group" style={{ marginTop: '20px' }}>
+                                            <label><Clock size={18} /> Afternoon Session</label>
+                                            <div className="time-slots-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))' }}>
+                                                {afternoonSlots.map(time => {
+                                                    const isAvailable = checkSlotAvailability(time)
+                                                    return (
+                                                        <button
+                                                            key={time}
+                                                            className={`slot-btn ${formData.startTime === time ? 'selected' : ''} ${!isAvailable ? 'occupied' : ''}`}
+                                                            disabled={!isAvailable}
+                                                            onClick={() => setFormData({ ...formData, startTime: time })}
+                                                        >
+                                                            {time} - {parseInt(time.split(':')[0])}:30
+                                                            {!isAvailable && <span className="occupied-badge">Booked</span>}
+                                                        </button>
+                                                    )
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Evening */}
                                     <div className="input-group" style={{ marginTop: '20px' }}>
                                         <label><Clock size={18} /> Evening Session</label>
                                         <div className="time-slots-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))' }}>
@@ -449,7 +493,7 @@ const BookingPage = () => {
                                                         disabled={!isAvailable}
                                                         onClick={() => setFormData({ ...formData, startTime: time })}
                                                     >
-                                                        {time}
+                                                        {parseInt(time.split(':')[0]) - 12}:00 - {parseInt(time.split(':')[0]) - 12}:30 PM
                                                         {!isAvailable && <span className="occupied-badge">Booked</span>}
                                                     </button>
                                                 )
@@ -496,6 +540,14 @@ const BookingPage = () => {
                                     value={formData.address}
                                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                                 ></textarea>
+                            </div>
+                            <div className="input-group">
+                                <input
+                                    type="text"
+                                    placeholder="Preferred Time (Optional) - If different from slot"
+                                    value={formData.preferredTime}
+                                    onChange={(e) => setFormData({ ...formData, preferredTime: e.target.value })}
+                                />
                             </div>
                             <div className="input-group">
                                 <textarea
