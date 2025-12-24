@@ -402,21 +402,23 @@ const BookingPage = () => {
                                                 const isSelected = isSameDay(day, parse(formData.date, 'yyyy-MM-dd', new Date()))
                                                 const isCurrentMonth = isSameMonth(day, monthStart)
                                                 const isPast = isBefore(day, startOfToday())
-                                                const { morningCount, eveningCount } = getSessionCounts(dateStr) // Note: getSessionCounts now returns afternoonCount too, but we just need to check if ANY session has space?
-                                                // Simplified busy logic for calendar dots:
-                                                const totalBookings = morningCount + eveningCount + getSessionCounts(dateStr).afternoonCount
-                                                const isBusy = totalBookings >= 6 // 3 sessions * 2 capacity = 6 total capacity
+                                                const counts = getSessionCounts(dateStr)
+                                                // A day is fully booked if:
+                                                // 1. Morning/Afternoon block is full (Max 2)
+                                                // 2. Evening block is full (Max 2)
+                                                const isBusy = (counts.morningCount + counts.afternoonCount >= 2) && (counts.eveningCount >= 2)
+                                                const totalBookings = counts.morningCount + counts.afternoonCount + counts.eveningCount
 
                                                 return (
                                                     <div
                                                         key={i}
                                                         className={`calendar-day ${isSelected ? 'selected' : ''} ${!isCurrentMonth ? 'other-month' : ''} ${isPast ? 'past' : ''} ${isBusy ? 'busy' : ''}`}
-                                                        onClick={() => handleDateClick(day)}
+                                                        onClick={() => !isBusy && handleDateClick(day)}
                                                     >
                                                         <span className="day-number">{format(day, 'd')}</span>
-                                                        {(morningCount + eveningCount) > 0 && !isPast && (
+                                                        {totalBookings > 0 && !isPast && (
                                                             <div className="dots">
-                                                                {Array(Math.min(morningCount + eveningCount, 3)).fill(0).map((_, idx) => <span key={idx} className="dot"></span>)}
+                                                                {Array(Math.min(totalBookings, 3)).fill(0).map((_, idx) => <span key={idx} className="dot"></span>)}
                                                             </div>
                                                         )}
                                                     </div>

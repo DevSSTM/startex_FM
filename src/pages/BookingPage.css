@@ -375,11 +375,41 @@
     border-radius: 12px;
     font-weight: 700;
     transition: all 0.2s ease;
+    position: relative;
+}
+
+.day-number {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
+    z-index: 2;
 }
 
 .calendar-day.selected {
     background: var(--primary);
     color: white;
+}
+
+.calendar-day.busy {
+    background: transparent;
+    border: none;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+.calendar-day.busy .day-number {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 2px solid #fee2e2;
+    box-shadow: 0 0 0 1px #fecaca;
+}
+
+.calendar-day.busy:hover {
+    background: transparent;
 }
 
 .calendar-day.past {
@@ -430,12 +460,18 @@
     color: #64748b;
 }
 
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
 .dot.available {
     background: #cbd5e1;
 }
 
 .dot.busy {
-    background: #f97316;
+    background: #e53e3e;
 }
 
 .actions {
