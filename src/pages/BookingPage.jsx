@@ -119,52 +119,39 @@ const BookingPage = () => {
     }, [formData.serviceId, formData.rooms, formData.addons, services])
 
     // Availability Logic
-    const morningSlots = ['08:00', '09:00', '10:00']
-    const eveningSlots = ['13:00', '14:00', '15:00']
+    const morningSlots = ['07:00', '08:00', '09:00']
+    const eveningSlots = ['12:00', '13:00', '14:00']
+
+    // Helper to count bookings per session for a given date
+    const getSessionCounts = (dateStr) => {
+        const dayBookings = existingBookings.filter(b => b.date === dateStr && b.status !== 'cancelled')
+
+        const morningCount = dayBookings.filter(b => {
+            const hour = parseInt(b.startTime.split(':')[0])
+            return hour < 12 // Before 12:00 is Morning
+        }).length
+
+        const eveningCount = dayBookings.filter(b => {
+            const hour = parseInt(b.startTime.split(':')[0])
+            return hour >= 12 // 12:00 and after is Evening
+        }).length
+
+        return { morningCount, eveningCount }
+    }
 
     const checkSlotAvailability = (time) => {
-        const selectedService = services.find(s => s.id === formData.serviceId)
-        const duration = selectedService ? parseInt(selectedService.duration) : 3
+        const { morningCount, eveningCount } = getSessionCounts(formData.date)
+        const hour = parseInt(time.split(':')[0])
+        const isMorning = hour < 12
 
-        const slotStart = parse(time, 'HH:mm', new Date())
-        const slotEnd = addHours(slotStart, duration)
-
-        // Business Hours Check (Must end by 5 PM)
-        const businessEnd = parse('17:00', 'HH:mm', new Date())
-        if (isBefore(businessEnd, slotEnd)) return false
-
-        // Existing Bookings Check
-        const dayBookings = existingBookings.filter(b =>
-            b.date === formData.date && b.status !== 'cancelled'
-        )
-
-        for (const booking of dayBookings) {
-            const bookingStart = parse(booking.startTime, 'HH:mm', new Date())
-            // Handle legacy bookings without endTime
-            let bookingEnd
-            if (booking.endTime) {
-                bookingEnd = parse(booking.endTime, 'HH:mm', new Date())
-            } else {
-                // Fallback for old data
-                const bookingDuration = booking.serviceType?.toLowerCase().includes('deep') ? 5 : 3
-                bookingEnd = addHours(bookingStart, bookingDuration)
-            }
-
-            // Buffer Check: New booking must start at least 1h after existing ends, OR end 1h before existing starts
-            // Collision if: (Start < ExistingEnd + 1h) AND (End > ExistingStart - 1h)
-            // Or simpler: We are BLOCKED if ranges [Start, End] and [ExistingStart-1h, ExistingEnd+1h] overlap.
-
-            const blockedStart = addHours(bookingStart, -1)
-            const blockedEnd = addHours(bookingEnd, 1)
-
-            // Check if our [slotStart, slotEnd] overlaps with [blockedStart, blockedEnd]
-            // Overlap condition: (Start < End2) && (Start2 < End)
-            if (isBefore(slotStart, blockedEnd) && isBefore(blockedStart, slotEnd)) {
-                return false
-            }
+        // Session-based availability: Max 2 bookings per session
+        // Note: We allow overlapping times (e.g. two people can book 8:00)
+        // The constraint is purely on the total count for the session.
+        if (isMorning) {
+            return morningCount < 2
+        } else {
+            return eveningCount < 2
         }
-
-        return true
     }
 
     // Calendar Generation
@@ -434,8 +421,8 @@ const BookingPage = () => {
                                                 const isSelected = isSameDay(day, parse(formData.date, 'yyyy-MM-dd', new Date()))
                                                 const isCurrentMonth = isSameMonth(day, monthStart)
                                                 const isPast = isBefore(day, startOfToday())
-                                                const dayBookings = existingBookings.filter(b => b.date === dateStr && b.status !== 'cancelled')
-                                                const isBusy = dayBookings.length >= 5
+                                                const { morningCount, eveningCount } = getSessionCounts(dateStr)
+                                                const isBusy = morningCount >= 2 && eveningCount >= 2 // Full day booked only if BOTH sessions are full
 
                                                 return (
                                                     <div
@@ -444,9 +431,10 @@ const BookingPage = () => {
                                                         onClick={() => handleDateClick(day)}
                                                     >
                                                         <span className="day-number">{format(day, 'd')}</span>
-                                                        {dayBookings.length > 0 && !isPast && (
+                                                        {(morningCount + eveningCount) > 0 && !isPast && (
                                                             <div className="dots">
-                                                                {dayBookings.slice(0, 3).map((_, idx) => <span key={idx} className="dot"></span>)}
+                                                                {/* Show dots based on total bookings, capped at 3 for UI */}
+                                                                {Array(Math.min(morningCount + eveningCount, 3)).fill(0).map((_, idx) => <span key={idx} className="dot"></span>)}
                                                             </div>
                                                         )}
                                                     </div>
