@@ -60,15 +60,53 @@ const BookingPage = () => {
     }, [formData.serviceId, formData.rooms, services])
 
     // Availability Logic
+    // Availability Logic
     const timeSlots = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00']
 
-    const getOccupiedSlots = (date) => {
-        return existingBookings
-            .filter(b => b.date === date && b.status !== 'cancelled')
-            .map(b => b.startTime)
-    }
+    const checkSlotAvailability = (time) => {
+        const selectedService = services.find(s => s.id === formData.serviceId)
+        const duration = selectedService ? parseInt(selectedService.duration) : 3
 
-    const occupiedSlots = useMemo(() => getOccupiedSlots(formData.date), [formData.date, existingBookings])
+        const slotStart = parse(time, 'HH:mm', new Date())
+        const slotEnd = addHours(slotStart, duration)
+
+        // Business Hours Check (Must end by 5 PM)
+        const businessEnd = parse('17:00', 'HH:mm', new Date())
+        if (isBefore(businessEnd, slotEnd)) return false
+
+        // Existing Bookings Check
+        const dayBookings = existingBookings.filter(b =>
+            b.date === formData.date && b.status !== 'cancelled'
+        )
+
+        for (const booking of dayBookings) {
+            const bookingStart = parse(booking.startTime, 'HH:mm', new Date())
+            // Handle legacy bookings without endTime
+            let bookingEnd
+            if (booking.endTime) {
+                bookingEnd = parse(booking.endTime, 'HH:mm', new Date())
+            } else {
+                // Fallback for old data
+                const bookingDuration = booking.serviceType?.toLowerCase().includes('deep') ? 5 : 3
+                bookingEnd = addHours(bookingStart, bookingDuration)
+            }
+
+            // Buffer Check: New booking must start at least 1h after existing ends, OR end 1h before existing starts
+            // Collision if: (Start < ExistingEnd + 1h) AND (End > ExistingStart - 1h)
+            // Or simpler: We are BLOCKED if ranges [Start, End] and [ExistingStart-1h, ExistingEnd+1h] overlap.
+
+            const blockedStart = addHours(bookingStart, -1)
+            const blockedEnd = addHours(bookingEnd, 1)
+
+            // Check if our [slotStart, slotEnd] overlaps with [blockedStart, blockedEnd]
+            // Overlap condition: (Start < End2) && (Start2 < End)
+            if (isBefore(slotStart, blockedEnd) && isBefore(blockedStart, slotEnd)) {
+                return false
+            }
+        }
+
+        return true
+    }
 
     // Calendar Generation
     const monthStart = startOfMonth(currentMonth)
@@ -177,16 +215,16 @@ const BookingPage = () => {
                                         <label><Clock size={18} /> Available Time Slots</label>
                                         <div className="time-slots-grid">
                                             {timeSlots.map(time => {
-                                                const isOccupied = occupiedSlots.includes(time)
+                                                const isAvailable = checkSlotAvailability(time)
                                                 return (
                                                     <button
                                                         key={time}
-                                                        className={`slot-btn ${formData.startTime === time ? 'selected' : ''} ${isOccupied ? 'occupied' : ''}`}
-                                                        disabled={isOccupied}
+                                                        className={`slot-btn ${formData.startTime === time ? 'selected' : ''} ${!isAvailable ? 'occupied' : ''}`}
+                                                        disabled={!isAvailable}
                                                         onClick={() => setFormData({ ...formData, startTime: time })}
                                                     >
                                                         {time}
-                                                        {isOccupied && <span className="occupied-badge">Booked</span>}
+                                                        {!isAvailable && <span className="occupied-badge">Booked</span>}
                                                     </button>
                                                 )
                                             })}
@@ -238,7 +276,7 @@ const BookingPage = () => {
                             </div>
                             <div className="actions">
                                 <button className="btn-secondary" onClick={handleBack}>Back</button>
-                                <button className="btn-primary" onClick={handleNext} disabled={occupiedSlots.includes(formData.startTime)}>
+                                <button className="btn-primary" onClick={handleNext} disabled={!checkSlotAvailability(formData.startTime)}>
                                     Next Step
                                 </button>
                             </div>

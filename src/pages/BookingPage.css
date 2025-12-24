@@ -336,6 +336,12 @@
     color: white;
 }
 
+.calendar-day.past {
+    font-weight: 400;
+    opacity: 0.5;
+    cursor: default;
+}
+
 /* Actions - Buttons fixed */
 .scheduler-left {
     display: flex;
