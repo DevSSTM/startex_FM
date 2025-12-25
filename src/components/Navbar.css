@@ -35,19 +35,21 @@
     padding: 0 12px;
 }
 
-.logo-container {
+.nav-text-logo {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--primary);
+    letter-spacing: -1px;
+    text-decoration: none;
     display: flex;
     align-items: center;
-    flex-shrink: 0;
+    transition: var(--transition);
 }
 
-.nav-logo {
-    height: 44px;
-    width: auto;
-    mix-blend-mode: multiply;
-    /* Remove white background */
-    filter: contrast(1.1);
-    transition: var(--transition);
+.nav-text-logo:hover {
+    transform: scale(1.05);
+    opacity: 0.8;
 }
 
 .nav-links-wrapper {

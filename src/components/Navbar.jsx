@@ -11,8 +11,8 @@ const Navbar = () => {
         <header className="nav-header">
             <nav className="navbar glass-nav">
                 <div className="nav-container">
-                    <Link to="/" className="logo-container">
-                        <img src="/logo/logo.png" alt="STRATEX" className="nav-logo" />
+                    <Link to="/" className="nav-text-logo">
+                        STRATEX
                     </Link>
 
                     {/* Desktop Menu */}
