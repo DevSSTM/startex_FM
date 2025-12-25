@@ -157,29 +157,56 @@
     }
 }
 
-/* Features Section */
-.features {
-    max-width: 1200px;
-    margin: 0 auto 100px;
-    padding: 0 2rem;
+.section-padding {
+    padding: 100px 0;
+}
+
+/* Features/About Section */
+.features-section {
+    background: white;
+}
+
+.section-title-dark {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.section-title-dark h2 {
+    font-size: 3rem;
+    color: var(--primary);
+    margin-bottom: 16px;
+}
+
+.section-title-dark h2 span {
+    color: var(--secondary);
+}
+
+.section-title-dark p {
+    color: var(--text-grey);
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.features-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 32px;
 }
 
 .feature-card {
-    background: white;
-    padding: 48px;
+    background: #f8fafc;
+    padding: 40px;
     border-radius: 32px;
     border: 1px solid #f1f5f9;
-    box-shadow: var(--card-shadow);
     transition: var(--transition);
+    height: 100%;
 }
 
 .feature-card:hover {
     transform: translateY(-10px);
-    box-shadow: var(--thick-shadow);
-    background: linear-gradient(to bottom right, #ffffff, #fdfdff);
+    box-shadow: var(--card-shadow);
+    background: white;
 }
 
 .feature-card .icon {
@@ -187,45 +214,48 @@
     background: #f0f9ff;
     padding: 12px;
     border-radius: 16px;
-    margin-bottom: 32px;
-    width: 64px;
-    height: 64px;
+    margin-bottom: 24px;
+    width: 56px;
+    height: 56px;
 }
 
 .feature-card h3 {
     font-size: 1.5rem;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
     color: var(--primary);
 }
 
 .feature-card p {
     color: var(--text-grey);
     font-size: 1rem;
+    line-height: 1.5;
 }
 
 /* Services Section */
 .services-overview {
     background: #001A6E;
-    padding: 120px 2rem;
     color: white;
-    border-radius: 60px;
-    margin: 0 20px;
+    padding: 120px 0;
+    margin: 0;
+    /* Removed the small margin to make it full width if needed, or we can use the container */
 }
 
 .section-title {
     text-align: center;
-    margin-bottom: 80px;
+    margin-bottom: 60px;
 }
 
 .section-title h2 {
-    font-size: 3rem;
+    font-size: 3.5rem;
     margin-bottom: 16px;
+    font-weight: 800;
 }
 
 .section-title p {
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 1.25rem;
-    font-weight: 500;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto;
 }
 
 .services-grid {
@@ -245,18 +275,44 @@
     min-width: 320px;
     max-width: 600px;
     width: 100%;
-    /* Keep existing styles below */
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(10px);
-    padding: 30px;
+    padding: 40px 30px;
     border-radius: 40px;
     transition: var(--transition);
     display: flex;
     flex-direction: column;
+    text-align: left;
+}
+
+.card-top {
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    /* Center horizontally */
+    gap: 8px;
+    margin-bottom: 5px;
+    /* Reduced space before points */
     text-align: center;
+}
+
+.card-icon {
+    color: var(--secondary);
+    margin-bottom: 8px;
+}
+
+.service-card.featured .card-icon {
+    color: var(--primary);
+}
+
+.service-card h3 {
+    font-size: 2rem;
+    margin: 0;
+    color: white;
+}
+
+.service-card.featured h3 {
+    color: var(--primary);
 }
 
 .service-card:hover {
@@ -294,105 +350,123 @@
     text-transform: uppercase;
 }
 
-.service-card h3 {
-    font-size: 1.8rem;
-    margin-bottom: 20px;
-}
-
-.service-list {
+.service-list.tick-list {
     list-style: none;
     padding: 0;
-    margin: 0 auto 40px;
-    /* Center the list block */
+    margin: 10px 0 30px;
     display: flex;
-    /* Single column */
     flex-direction: column;
-    gap: 16px;
-    text-align: left;
-    /* Keep item text left aligned */
-    width: fit-content;
-    /* Shrink to fit content so it can be centered */
-    min-width: 280px;
-    /* But keep a minimum width */
+    gap: 12px;
 }
 
-.service-list li {
-    font-size: 1.05rem;
-    /* Slightly larger text */
+.tick-list li {
     display: flex;
     align-items: flex-start;
-    gap: 16px;
-    line-height: 1.6;
-    position: relative;
-    padding-left: 20px;
+    gap: 12px;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.8);
 }
 
-.service-list li svg {
-    display: none;
-    /* Hide default icons, user wants bullets, but let's check markup */
+.service-card.featured .tick-list li {
+    color: var(--text-dark);
 }
 
-/* User asked for bullets, assuming markup uses `<ul>` and `<li>`, we can use `list-style-type` or `::before` but let's see how Home.jsx renders it. It uses <Check /> icon. Let's hide it and add a bullet. */
-.service-list li::before {
-    content: '•';
-    color: var(--secondary);
+.tick-box {
+    min-width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
     font-weight: bold;
-    font-size: 1.5rem;
-    line-height: 0.8;
-    position: absolute;
-    left: 0;
-    top: 2px;
+}
+
+.tick-list li.included .tick-box {
+    color: #10b981;
+}
+
+.tick-list li.excluded {
+    opacity: 0.6;
+}
+
+.tick-list li.excluded .tick-box {
+    color: #ef4444;
 }
 
 .service-footer {
+    margin-top: auto;
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    justify-content: space-between;
+    align-items: center;
     padding-top: 30px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.featured .service-footer {
-    border-top-color: #f1f5f9;
+.service-card.featured .service-footer {
+    border-color: #f1f5f9;
 }
 
-.service-footer span {
-    font-size: 0.9rem;
+.price-tag span {
+    font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.5);
+    opacity: 0.6;
 }
 
-.featured .service-footer span {
-    color: var(--text-grey);
+.price-tag h4 {
+    font-size: 1.8rem;
+    line-height: 1;
+    margin: 4px 0 0;
 }
 
-.service-footer h4 {
-    font-size: 2.5rem;
-    font-weight: 800;
+.btn-book-now {
+    background: var(--secondary);
+    color: var(--primary);
+    padding: 12px 24px;
+    border-radius: 100px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+    transition: var(--transition);
 }
 
-/* CTA */
-.cta {
-    padding: 120px 2rem;
-    text-align: center;
+.btn-book-now:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 20px -10px var(--secondary);
+}
+
+.service-card.featured .btn-book-now {
+    background: var(--primary);
+    color: white;
+}
+
+/* CTA Section */
+.cta-section {
+    background: white;
 }
 
 .cta-content {
-    max-width: 800px;
+    max-width: 1000px;
     margin: 0 auto;
     background: var(--secondary);
     padding: 80px 40px;
     border-radius: 48px;
     color: var(--primary);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
 }
 
-.cta h2 {
+.cta-content h2 {
     font-size: 3.5rem;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
+    font-weight: 800;
 }
 
-.cta p {
+.cta-content p {
     font-size: 1.25rem;
     margin-bottom: 40px;
     opacity: 0.9;
@@ -401,8 +475,8 @@
 .btn-white {
     background: var(--primary);
     color: white;
-    padding: 20px 48px;
-    border-radius: 18px;
+    padding: 18px 48px;
+    border-radius: 100px;
     font-size: 1.1rem;
     font-weight: 700;
     display: inline-block;
@@ -411,6 +485,7 @@
 .btn-white:hover {
     transform: scale(1.05);
     background: var(--primary-dark);
+    box-shadow: 0 10px 30px -5px rgba(0, 26, 110, 0.4);
 }
 
 @media (max-width: 1100px) {

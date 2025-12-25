@@ -26,60 +26,50 @@ const BookingPage = () => {
     const [totalPrice, setTotalPrice] = useState(0)
 
     const AVAILABLE_ADDONS = [
-        { id: 'ac', name: 'AC Cleaning', price: 2500, color: '#2563eb', bg: '#dbeafe' }, // Blue
-        { id: 'fridge', name: 'Refrigerator Cleaning', price: 1500, color: '#059669', bg: '#d1fae5' }, // Green
-        { id: 'oven', name: 'Oven Deep Clean', price: 1200, color: '#ea580c', bg: '#ffedd5' }, // Orange
-        { id: 'window', name: 'Extra Window Cleaning', price: 1000, color: '#7c3aed', bg: '#ede9fe' } // Purple
+        { id: 'floor', name: 'Floor buffing', price: 3000, color: '#ea580c', bg: '#fff7ed' },
+        { id: 'carpet', name: 'Carpet Shampooing', price: 3000, color: '#7c3aed', bg: '#f5f3ff' },
+        { id: 'ac', name: 'AC Cleaning', price: 2500, color: '#2563eb', bg: '#dbeafe' },
+        { id: 'fridge', name: 'Refrigerator Cleaning', price: 1500, color: '#059669', bg: '#d1fae5' }
     ]
 
     useEffect(() => {
         // Enforce the latest service definitions
+        const allTasks = [
+            { text: 'Floor sweeping & mopping' },
+            { text: 'Washroom cleaning (toilets, sinks, mirrors, floors)' },
+            { text: 'Dusting surfaces (tables, shelves, counters)' },
+            { text: 'Balcony sweeping & mopping' },
+            { text: 'Cobweb removal' },
+            { text: 'Kitchen countertop & external surface wipe-down' },
+            { text: 'Spot cleaning where required' },
+            { text: 'Deep cleaning of kitchen (appliances external, cabinets external)' },
+            { text: 'Polishing wood surfaces & furniture' },
+            { text: 'Window & glass panel cleaning' },
+            { text: 'Skirting, fans, light fixtures & switchboards detailed cleaning' },
+            { text: 'Vacuuming carpets, sofas, rugs' },
+            { text: 'Hard stain removal (best-effort basis)' }
+        ]
+
         const coreServices = [
             {
                 id: 1,
                 name: 'Normal Cleaning',
                 basePrice: 15000,
-                duration: '3 Hours',
                 type: 'normal',
-                description: 'Target: Daily/weekly apartment upkeep',
-                features: [
-                    { text: 'Floor sweeping & mopping', included: true },
-                    { text: 'Washroom cleaning (toilets, sinks, mirrors, floors)', included: true },
-                    { text: 'Dusting surfaces (tables, shelves, counters)', included: true },
-                    { text: 'Balcony sweeping & mopping', included: true },
-                    { text: 'Cobweb removal', included: true },
-                    { text: 'Kitchen countertop & external surface wipe-down', included: true },
-                    { text: 'Spot cleaning where required', included: true },
-                    { text: 'Deep cleaning of kitchen (appliances external, cabinets external)', included: false },
-                    { text: 'Polishing wood surfaces & furniture', included: false },
-                    { text: 'Window & glass panel cleaning', included: false },
-                    { text: 'Skirting, fans, light fixtures & switchboards detailed cleaning', included: false },
-                    { text: 'Vacuuming carpets, sofas, rugs', included: false },
-                    { text: 'Hard stain removal (best-effort basis)', included: false }
-                ],
+                features: allTasks.map((t, idx) => ({
+                    ...t,
+                    included: idx < 7
+                })),
             },
             {
                 id: 2,
                 name: 'Deep Cleaning',
                 basePrice: 20000,
-                duration: '5 Hours',
                 type: 'deep',
-                description: 'Target: Weekly, Seasonal, move-in/move-out, post-renovation',
-                features: [
-                    { text: 'Floor sweeping & mopping', included: true },
-                    { text: 'Washroom cleaning (toilets, sinks, mirrors, floors)', included: true },
-                    { text: 'Dusting surfaces (tables, shelves, counters)', included: true },
-                    { text: 'Balcony sweeping & mopping', included: true },
-                    { text: 'Cobweb removal', included: true },
-                    { text: 'Kitchen countertop & external surface wipe-down', included: true },
-                    { text: 'Spot cleaning where required', included: true },
-                    { text: 'Deep cleaning of kitchen (appliances external, cabinets external)', included: true },
-                    { text: 'Polishing wood surfaces & furniture', included: true },
-                    { text: 'Window & glass panel cleaning', included: true },
-                    { text: 'Skirting, fans, light fixtures & switchboards detailed cleaning', included: true },
-                    { text: 'Vacuuming carpets, sofas, rugs', included: true },
-                    { text: 'Hard stain removal (best-effort basis)', included: true }
-                ],
+                features: allTasks.map((t, idx) => ({
+                    ...t,
+                    included: true
+                })),
             }
         ]
 
@@ -161,13 +151,12 @@ const BookingPage = () => {
         }
         // Afternoon (10-12)
         else if (hour >= 10 && hour < 13) {
-            // "if two booking come from morning session afternoon session need dissapear"
-            // This implies Afternoon is unavailable if Morning is full.
-            // Also depends on its own capacity.
             return afternoonCount < 2 && morningCount < 2
         }
         // Evening (13+)
         else {
+            const dayOfWeek = parse(formData.date, 'yyyy-MM-dd', new Date()).getDay()
+            if (dayOfWeek === 6) return false // Saturday evening blocked
             return eveningCount < 2
         }
     }
@@ -181,6 +170,20 @@ const BookingPage = () => {
 
     const handleDateClick = (day) => {
         if (isBefore(day, startOfToday())) return
+
+        const dayOfWeek = day.getDay()
+        if (dayOfWeek === 0) {
+            alert("Sundays - No bookings allowed.")
+            return
+        }
+
+        const dateStr = format(day, 'MM-dd')
+        const publicHolidays = ['01-01', '01-14', '02-04', '04-13', '04-14', '05-01', '12-25']
+        if (publicHolidays.includes(dateStr)) {
+            alert("Public Holiday - No bookings allowed.")
+            return
+        }
+
         setFormData({ ...formData, date: format(day, 'yyyy-MM-dd') })
     }
 
@@ -278,23 +281,35 @@ const BookingPage = () => {
                                         className={`option-card ${formData.serviceId === service.id ? 'selected' : ''}`}
                                         onClick={() => setFormData({ ...formData, serviceId: service.id, serviceType: service.name.toLowerCase() })}
                                     >
-                                        {service.type === 'deep' ? <Sparkles size={32} /> : <Home size={32} />}
-                                        <h4>{service.name}</h4>
-                                        <p>{service.description || 'Professional Cleaning'}</p>
+                                        <div className="card-header-main">
+                                            {service.type === 'deep' ? <Sparkles size={32} className="card-icon" /> : <Home size={32} className="card-icon" />}
+                                            <h4>{service.name}</h4>
+                                        </div>
                                         {service.features && (
-                                            <ul className="card-features">
+                                            <ul className="card-features tick-points">
                                                 {service.features.map((item, i) => (
-                                                    <li key={i} className={item.included ? 'included' : 'excluded'}>
+                                                    <li key={i} className={`tick-item ${!item.included ? 'excluded' : ''}`}>
+                                                        <span className="tick-icon">
+                                                            {item.included ? '✓' : '✕'}
+                                                        </span>
                                                         {item.text}
                                                     </li>
                                                 ))}
                                             </ul>
                                         )}
-                                        <span>Approx {service.duration}</span>
+                                        <button
+                                            className="btn-primary card-select-btn"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setFormData({ ...formData, serviceId: service.id, serviceType: service.name.toLowerCase() });
+                                                handleNext();
+                                            }}
+                                        >
+                                            Next Step
+                                        </button>
                                     </div>
                                 ))}
                             </div>
-                            <button className="btn-primary" onClick={handleNext}>Next Step</button>
                         </div>
                     )}
 
@@ -317,7 +332,7 @@ const BookingPage = () => {
                                 </div>
                             </div>
                             <div className="price-preview">
-                                <span>Estimated Price:</span>
+                                <span>Price:</span>
                                 <h2>LKR {totalPrice.toLocaleString()}</h2>
                             </div>
                             <div className="actions">
@@ -402,17 +417,16 @@ const BookingPage = () => {
                                                 const isSelected = isSameDay(day, parse(formData.date, 'yyyy-MM-dd', new Date()))
                                                 const isCurrentMonth = isSameMonth(day, monthStart)
                                                 const isPast = isBefore(day, startOfToday())
+                                                const dayOfWeek = day.getDay()
+                                                const isSunday = dayOfWeek === 0
                                                 const counts = getSessionCounts(dateStr)
-                                                // A day is fully booked if:
-                                                // 1. Morning/Afternoon block is full (Max 2)
-                                                // 2. Evening block is full (Max 2)
                                                 const isBusy = (counts.morningCount + counts.afternoonCount >= 2) && (counts.eveningCount >= 2)
                                                 const totalBookings = counts.morningCount + counts.afternoonCount + counts.eveningCount
 
                                                 return (
                                                     <div
                                                         key={i}
-                                                        className={`calendar-day ${isSelected ? 'selected' : ''} ${!isCurrentMonth ? 'other-month' : ''} ${isPast ? 'past' : ''} ${isBusy ? 'busy' : ''}`}
+                                                        className={`calendar-day ${isSelected ? 'selected' : ''} ${!isCurrentMonth ? 'other-month' : ''} ${isPast ? 'past' : ''} ${isBusy ? 'busy' : ''} ${isSunday ? 'sunday' : ''}`}
                                                         onClick={() => !isBusy && handleDateClick(day)}
                                                     >
                                                         <span className="day-number">{format(day, 'd')}</span>
@@ -494,15 +508,22 @@ const BookingPage = () => {
                                         <div className="time-slots-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))' }}>
                                             {eveningSlots.map(time => {
                                                 const isAvailable = checkSlotAvailability(time)
+                                                const dayOfWeek = parse(formData.date, 'yyyy-MM-dd', new Date()).getDay()
+                                                const isSaturdayHoliday = dayOfWeek === 6
+
                                                 return (
                                                     <button
                                                         key={time}
-                                                        className={`slot-btn ${formData.startTime === time ? 'selected' : ''} ${!isAvailable ? 'occupied' : ''}`}
-                                                        disabled={!isAvailable}
+                                                        className={`slot-btn ${formData.startTime === time ? 'selected' : ''} ${!isAvailable || isSaturdayHoliday ? 'occupied' : ''}`}
+                                                        disabled={!isAvailable || isSaturdayHoliday}
                                                         onClick={() => setFormData({ ...formData, startTime: time })}
                                                     >
                                                         {parseInt(time.split(':')[0]) - 12}:00 - {parseInt(time.split(':')[0]) - 12}:30 PM
-                                                        {!isAvailable && <span className="occupied-badge">Booked</span>}
+                                                        {isSaturdayHoliday ? (
+                                                            <span className="occupied-badge" style={{ background: '#fef3c7', color: '#92400e', borderColor: '#fde68a' }}>Holiday</span>
+                                                        ) : (
+                                                            !isAvailable && <span className="occupied-badge">Booked</span>
+                                                        )}
                                                     </button>
                                                 )
                                             })}
@@ -530,15 +551,17 @@ const BookingPage = () => {
                                     required
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    style={{ fontFamily: 'inherit' }}
                                 />
                             </div>
                             <div className="input-group">
                                 <input
                                     type="tel"
-                                    placeholder="Phone Number"
+                                    placeholder="Phone Number (WhatsApp preferred)"
                                     required
                                     value={formData.phone}
                                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                    style={{ fontFamily: 'inherit' }}
                                 />
                             </div>
                             <div className="input-group">
@@ -547,14 +570,16 @@ const BookingPage = () => {
                                     required
                                     value={formData.address}
                                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                    style={{ fontFamily: 'inherit' }}
                                 ></textarea>
                             </div>
                             <div className="input-group">
                                 <input
                                     type="text"
-                                    placeholder="Preferred Time (Optional) - If different from slot"
+                                    placeholder="Preferred Time"
                                     value={formData.preferredTime}
                                     onChange={(e) => setFormData({ ...formData, preferredTime: e.target.value })}
+                                    style={{ fontFamily: 'inherit' }}
                                 />
                             </div>
                             <div className="input-group">
@@ -562,6 +587,7 @@ const BookingPage = () => {
                                     placeholder="Special Remarks (Optional)"
                                     value={formData.remarks}
                                     onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
+                                    style={{ fontFamily: 'inherit' }}
                                     rows="3"
                                 ></textarea>
                             </div>

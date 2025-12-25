@@ -148,58 +148,80 @@
     font-weight: 700;
 }
 
-.option-card p {
-    color: var(--text-grey);
-    font-size: 0.95rem;
-    margin-bottom: 20px;
-    flex-grow: 1;
+.card-header-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    /* Even smaller gap */
+    margin-bottom: 5px;
+    /* Even smaller margin */
 }
 
-.card-features {
+.card-header-main h4 {
+    margin: 0;
+    color: var(--primary);
+    font-size: 1.4rem;
+}
+
+.card-icon {
+    color: var(--secondary);
+    margin-bottom: 8px;
+}
+
+.option-card.selected .card-icon {
+    color: white;
+}
+
+.tick-points {
     list-style: none;
     padding: 0;
-    margin: 15px 0 20px;
+    margin: 2px 0 15px;
+    /* Further reduced margin between heading and points */
     text-align: left;
     width: 100%;
 }
 
-.card-features li {
-    font-size: 0.85rem;
+.tick-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 0.9rem;
     margin-bottom: 8px;
-    position: relative;
-    padding-left: 24px;
-    line-height: 1.4;
-    text-align: left;
-}
-
-.card-features li.included {
     color: var(--text-dark);
+    line-height: 1.4;
 }
 
-.card-features li.excluded {
-    color: #ef4444;
-    /* Red color */
-    opacity: 0.8;
-}
-
-.card-features li::before {
-    position: absolute;
-    left: 0;
-    font-weight: bold;
-}
-
-.card-features li.included::before {
-    content: '✔';
+.tick-icon {
     color: #10b981;
-    /* Green tick */
+    font-weight: bold;
+    font-size: 1.1rem;
+    line-height: 1;
 }
 
-.card-features li.excluded::before {
-    content: '✖';
-    color: #ef4444;
-    /* Red x */
-    font-size: 0.9em;
+.tick-item.excluded {
+    color: #94a3b8;
 }
+
+.tick-item.excluded .tick-icon {
+    color: #ef4444;
+}
+
+.extra-tick {
+    color: #f59e0b !important;
+    /* Amber for deep clean additional */
+    font-weight: 900;
+}
+
+.card-select-btn {
+    width: 100%;
+    margin-top: auto;
+    padding: 14px !important;
+    font-size: 1rem !important;
+}
+
+/* Removed old card-features li ::before styles */
+
 
 .option-card span {
     font-size: 0.85rem;
@@ -232,6 +254,7 @@
     margin-bottom: 15px;
     color: var(--primary);
     font-size: 0.95rem;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
 }
 
 .selected-date-display {
@@ -277,7 +300,25 @@
     border-color: #fee2e2;
     color: #ef4444;
     cursor: not-allowed;
-    opacity: 0.6;
+    opacity: 1;
+    /* Keep it clear */
+    position: relative;
+    padding-bottom: 25px;
+    /* Space for badge */
+}
+
+.occupied-badge {
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border-radius: 100px;
+    background: #fee2e2;
+    color: #ef4444;
+    border: 1px solid #fecaca;
+    white-space: nowrap;
 }
 
 /* Step 3 & 4 Inputs */
@@ -320,22 +361,31 @@
     font-weight: 800;
 }
 
+.step-content input,
+.step-content textarea,
+.step-content select,
 .input-group input,
 .input-group textarea {
     width: 100%;
     padding: 18px 24px;
     border-radius: 16px;
     border: 2px solid #f1f5f9;
+    background: #f8fafc;
     font-size: 1rem;
     color: var(--text-dark);
     transition: all 0.3s ease;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    /* Explicitly use the project font */
 }
 
+.step-content input:focus,
+.step-content textarea:focus,
 .input-group input:focus,
 .input-group textarea:focus {
-    border-color: var(--primary);
     outline: none;
-    box-shadow: 0 0 0 4px rgba(0, 26, 110, 0.05);
+    border-color: var(--secondary);
+    background: white;
+    box-shadow: 0 0 0 4px rgba(127, 201, 232, 0.15);
 }
 
 /* Calendar */
@@ -410,6 +460,14 @@
 
 .calendar-day.busy:hover {
     background: transparent;
+}
+
+.calendar-day.sunday {
+    color: #ef4444 !important;
+}
+
+.calendar-day.sunday .day-number {
+    border: 1px dashed #fecaca;
 }
 
 .calendar-day.past {

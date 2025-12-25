@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Shield, Sparkles, Clock, Star, Check } from 'lucide-react'
+import { ArrowRight, Shield, Sparkles, Clock, Star, Check, Home as HomeIcon } from 'lucide-react'
 import './Home.css'
 
 const Home = () => {
@@ -8,39 +8,43 @@ const Home = () => {
 
     useEffect(() => {
         // Enforce the latest service definitions
+        const allTasks = [
+            { text: 'Floor sweeping & mopping' },
+            { text: 'Washroom cleaning (toilets, sinks, mirrors, floors)' },
+            { text: 'Dusting surfaces (tables, shelves, counters)' },
+            { text: 'Balcony sweeping & mopping' },
+            { text: 'Cobweb removal' },
+            { text: 'Kitchen countertop & external surface wipe-down' },
+            { text: 'Spot cleaning where required' },
+            { text: 'Deep cleaning of kitchen (appliances external, cabinets external)' },
+            { text: 'Polishing wood surfaces & furniture' },
+            { text: 'Window & glass panel cleaning' },
+            { text: 'Skirting, fans, light fixtures & switchboards detailed cleaning' },
+            { text: 'Vacuuming carpets, sofas, rugs' },
+            { text: 'Hard stain removal (best-effort basis)' }
+        ]
+
         const coreServices = [
             {
                 id: 1,
                 name: 'Normal Cleaning',
                 basePrice: 15000,
-                description: 'Target: Daily/weekly apartment upkeep',
-                features: [
-                    'Floor sweeping & mopping',
-                    'Washroom cleaning (toilets, sinks, mirrors, floors)',
-                    'Dusting surfaces (tables, shelves, counters)',
-                    'Balcony sweeping & mopping',
-                    'Cobweb removal',
-                    'Kitchen countertop & external surface wipe-down',
-                    'Spot cleaning where required'
-                ],
-                type: 'normal'
+                type: 'normal',
+                features: allTasks.map((t, idx) => ({
+                    ...t,
+                    included: idx < 7
+                })),
             },
             {
                 id: 2,
                 name: 'Deep Cleaning',
                 basePrice: 20000,
-                description: 'Target: Weekly, Seasonal, move-in/move-out, post-renovation',
-                features: [
-                    'All tasks from Normal Cleaning PLUS:',
-                    'Deep cleaning of kitchen (appliances external, cabinets external)',
-                    'Polishing wood surfaces & furniture',
-                    'Window & glass panel cleaning',
-                    'Skirting, fans, light fixtures & switchboards detailed cleaning',
-                    'Vacuuming carpets, sofas, rugs',
-                    'Hard stain removal (best-effort basis)'
-                ],
                 type: 'deep',
-                featured: true
+                featured: true,
+                features: allTasks.map((t, idx) => ({
+                    ...t,
+                    included: true
+                })),
             }
         ]
 
@@ -75,63 +79,78 @@ const Home = () => {
             </section>
 
             {/* Features/About Section */}
-            <section id="about" className="features">
-                <div className="feature-card">
-                    <Shield className="icon" />
-                    <h3>Trusted Professionals</h3>
-                    <p>All our cleaners are vetted and trained for maximum security.</p>
-                </div>
-                <div className="feature-card">
-                    <Sparkles className="icon" />
-                    <h3>Deep Cleaning</h3>
-                    <p>We go beyond the surface to ensure a germ-free environment.</p>
-                </div>
-                <div className="feature-card">
-                    <Clock className="icon" />
-                    <h3>On-Time Service</h3>
-                    <p>Your time is valuable. We guarantee punctuality for every slot.</p>
+            <section id="about" className="section-padding features-section">
+                <div className="container">
+                    <div className="section-title-dark">
+                        <span className="badge">Why Choose Us</span>
+                        <h2>Experts in <span>Modern Cleaning</span></h2>
+                        <p>We combine professional skills with eco-friendly solutions to deliver unmatched results.</p>
+                    </div>
+                    <div className="features-grid">
+                        <div className="feature-card">
+                            <Shield className="icon" />
+                            <h3>Trusted Professionals</h3>
+                            <p>All our cleaners are vetted and trained for maximum security and peace of mind.</p>
+                        </div>
+                        <div className="feature-card">
+                            <Sparkles className="icon" />
+                            <h3>Deep Cleaning</h3>
+                            <p>We go beyond the surface to ensure a germ-free and sparkling environment.</p>
+                        </div>
+                        <div className="feature-card">
+                            <Clock className="icon" />
+                            <h3>On-Time Service</h3>
+                            <p>Your time is valuable. We guarantee punctuality and efficiency for every single slot.</p>
+                        </div>
+                    </div>
                 </div>
             </section>
 
             {/* Services Section */}
             <section id="services" className="services-overview">
-                <div className="section-title">
-                    <h2>Our Core Packages</h2>
-                    <p>Tailored solutions for every need</p>
-                </div>
-                <div className="services-grid">
-                    {services.map((service) => (
-                        <div key={service.id} className={`service-card ${service.featured ? 'featured' : ''}`}>
-                            <h3>{service.name}</h3>
-                            {/* Target description removed as requested */}
-                            <ul className="service-list">
-                                {service.features ? (
-                                    service.features.map((feat, i) => (
-                                        <li key={i}><Check size={14} /> {feat}</li>
-                                    ))
-                                ) : (
-                                    <>
-                                        <li><Check size={14} /> Professional Staff</li>
-                                        <li><Check size={14} /> Quality Equipment</li>
-                                        <li><Check size={14} /> Eco-friendly chemicals</li>
-                                    </>
-                                )}
-                            </ul>
-                            <div className="service-footer">
-                                <span>Starts at</span>
-                                <h4>LKR {Number(service.basePrice).toLocaleString()}</h4>
+                <div className="container">
+                    <div className="section-title">
+                        <h2>Our Core Packages</h2>
+                        <p>Tailored cleaning solutions for your home and lifestyle.</p>
+                    </div>
+                    <div className="services-grid">
+                        {services.map((service) => (
+                            <div key={service.id} className={`service-card ${service.featured ? 'featured' : ''}`}>
+                                <div className="card-top">
+                                    {service.type === 'deep' ? <Sparkles size={32} className="card-icon" /> : <HomeIcon size={32} className="card-icon" />}
+                                    <h3>{service.name}</h3>
+                                </div>
+                                <ul className="service-list tick-list">
+                                    {service.features?.map((feat, i) => (
+                                        <li key={i} className={feat.included ? 'included' : 'excluded'}>
+                                            <span className="tick-box">{feat.included ? '✓' : '✕'}</span>
+                                            {feat.text}
+                                        </li>
+                                    ))}
+                                </ul>
+                                <div className="service-footer">
+                                    <div className="price-tag">
+                                        <span>Starts at</span>
+                                        <h4>LKR {Number(service.basePrice).toLocaleString()}</h4>
+                                    </div>
+                                    <Link to="/book" className="btn-book-now">
+                                        Schedule Now <ArrowRight size={16} />
+                                    </Link>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
             </section>
 
             {/* CTA Section */}
-            <section className="cta">
-                <div className="cta-content">
-                    <h2>Ready for a Spotless Home?</h2>
-                    <p>Book your preferred date and time in just a few clicks.</p>
-                    <Link to="/book" className="btn-white">Schedule Now</Link>
+            <section className="cta-section section-padding">
+                <div className="container">
+                    <div className="cta-content">
+                        <h2>Ready for a Spotless Home?</h2>
+                        <p>Join hundreds of happy customers. Book your cleaning slot in just under 2 minutes.</p>
+                        <Link to="/book" className="btn-white">Schedule Your Visit</Link>
+                    </div>
                 </div>
             </section>
         </div>
