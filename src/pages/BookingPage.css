@@ -535,6 +535,50 @@
     background: #e53e3e;
 }
 
+.dot.holiday {
+    background: #f59e0b;
+}
+
+.calendar-day.holiday {
+    background: #fffbeb;
+    cursor: not-allowed;
+}
+
+.calendar-day.holiday .day-number {
+    color: #b45309;
+    font-weight: 800;
+}
+
+.holiday-dot {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 6px;
+    height: 6px;
+    background: #f59e0b;
+    border-radius: 50%;
+}
+
+.holiday-label {
+    position: absolute;
+    bottom: 2px;
+    font-size: 0.5rem;
+    color: #b45309;
+    text-align: center;
+    width: 90%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 600;
+    opacity: 0.8;
+}
+
+@media (max-width: 600px) {
+    .holiday-label {
+        display: none;
+    }
+}
+
 .actions {
     display: flex;
     gap: 20px;

@@ -30,6 +30,28 @@ const BookingPage = () => {
         { id: 'carpet', name: 'Carpet Shampooing', price: 3000, color: '#10b981', bg: '#ecfdf5' }
     ]
 
+    const PUBLIC_HOLIDAYS = {
+        '2025-01-13': 'Duruthu Poya', '2025-01-14': 'Thai Pongal', '2025-02-04': 'Independence Day',
+        '2025-02-12': 'Navam Poya', '2025-02-26': 'Mahasivarathri', '2025-03-13': 'Medin Poya',
+        '2025-03-31': 'Id-Ul-Fitr', '2025-04-12': 'Bak Poya', '2025-04-13': 'New Year Eve',
+        '2025-04-14': 'Sinhala & Tamil New Year', '2025-04-15': 'Bank Holiday', '2025-05-01': 'May Day',
+        '2025-05-12': 'Vesak Poya', '2025-05-13': 'Vesak Holiday', '2025-06-09': 'Id-Ul-Alha',
+        '2025-06-10': 'Poson Poya', '2025-07-10': 'Esala Poya', '2025-08-10': 'Nikini Poya',
+        '2025-09-08': 'Milad-Un-Nabi', '2025-09-09': 'Binara Poya', '2025-10-06': 'Vap Poya',
+        '2025-10-20': 'Deepavali', '2025-11-05': 'Il Poya', '2025-12-04': 'Unduvap Poya',
+        '2025-12-25': 'Christmas',
+        // 2026
+        '2026-01-03': 'Duruthu Poya', '2026-01-15': 'Thai Pongal', '2026-02-01': 'Navam Poya',
+        '2026-02-04': 'Independence Day', '2026-02-15': 'Mahasivarathri', '2026-03-02': 'Medin Poya',
+        '2026-03-21': 'Id-Ul-Fitr', '2026-04-01': 'Bak Poya', '2026-04-03': 'Good Friday',
+        '2026-04-13': 'New Year Eve', '2026-04-14': 'Sinhala & Tamil New Year', '2026-05-01': 'May Day',
+        '2026-05-02': 'Vesak Holiday', '2026-05-27': 'Id-Ul-Alha', '2026-05-30': 'Vesak Poya',
+        '2026-06-29': 'Poson Poya', '2026-07-29': 'Esala Poya', '2026-08-25': 'Milad-Un-Nabi',
+        '2026-08-27': 'Nikini Poya', '2026-09-26': 'Binara Poya', '2026-10-25': 'Vap Poya',
+        '2026-11-08': 'Deepavali', '2026-11-24': 'Il Poya', '2026-12-23': 'Unduvap Poya',
+        '2026-12-25': 'Christmas'
+    }
+
     useEffect(() => {
         // Enforce the latest service definitions
         const allTasks = [
@@ -177,10 +199,9 @@ const BookingPage = () => {
             return
         }
 
-        const dateStr = format(day, 'MM-dd')
-        const publicHolidays = ['01-01', '01-14', '02-04', '04-13', '04-14', '05-01', '12-25']
-        if (publicHolidays.includes(dateStr)) {
-            alert("Public Holiday - No bookings allowed.")
+        const dateStr = format(day, 'yyyy-MM-dd')
+        if (PUBLIC_HOLIDAYS[dateStr]) {
+            alert(`${PUBLIC_HOLIDAYS[dateStr]} - Public Holiday. No bookings allowed.`)
             return
         }
 
@@ -423,18 +444,24 @@ const BookingPage = () => {
                                                 const isBusy = (counts.morningCount + counts.afternoonCount >= 2) && (counts.eveningCount >= 2)
                                                 const totalBookings = counts.morningCount + counts.afternoonCount + counts.eveningCount
 
+                                                const holidayName = PUBLIC_HOLIDAYS[dateStr]
+                                                const isHoliday = !!holidayName
+
                                                 return (
                                                     <div
                                                         key={i}
-                                                        className={`calendar-day ${isSelected ? 'selected' : ''} ${!isCurrentMonth ? 'other-month' : ''} ${isPast ? 'past' : ''} ${isBusy ? 'busy' : ''} ${isSunday ? 'sunday' : ''}`}
+                                                        className={`calendar-day ${isSelected ? 'selected' : ''} ${!isCurrentMonth ? 'other-month' : ''} ${isPast ? 'past' : ''} ${isBusy ? 'busy' : ''} ${isSunday ? 'sunday' : ''} ${isHoliday ? 'holiday' : ''}`}
                                                         onClick={() => !isBusy && handleDateClick(day)}
+                                                        title={holidayName || ''}
                                                     >
                                                         <span className="day-number">{format(day, 'd')}</span>
+                                                        {isHoliday && <span className="holiday-dot"></span>}
                                                         {totalBookings > 0 && !isPast && (
                                                             <div className="dots">
                                                                 {Array(Math.min(totalBookings, 3)).fill(0).map((_, idx) => <span key={idx} className="dot"></span>)}
                                                             </div>
                                                         )}
+                                                        {isHoliday && <span className="holiday-label">{holidayName}</span>}
                                                     </div>
                                                 )
                                             })}
@@ -443,6 +470,7 @@ const BookingPage = () => {
                                     <div className="calendar-legend" style={{ marginTop: '10px', justifyContent: 'center' }}>
                                         <div className="legend-item"><span className="dot busy"></span> Busy</div>
                                         <div className="legend-item"><span className="dot available"></span> Available</div>
+                                        <div className="legend-item"><span className="dot holiday"></span> Holiday</div>
                                     </div>
                                 </div>
 
