@@ -122,6 +122,10 @@ const Admin = () => {
             setServices(savedServices)
         }
 
+        // Initialize Vendors
+        const savedVendors = JSON.parse(localStorage.getItem('vendors') || '[]')
+        setVendors(savedVendors)
+
         // Stats calculation
         const newStats = bookingData.reduce((acc, curr) => {
             acc[curr.status] = (acc[curr.status] || 0) + 1
