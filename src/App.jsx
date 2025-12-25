@@ -5,6 +5,7 @@ import Home from './pages/Home'
 import Admin from './pages/Admin'
 import BookingPage from './pages/BookingPage'
 import Footer from './components/Footer'
+import FloatingWhatsApp from './components/FloatingWhatsApp'
 import './App.css'
 
 function AppContent() {
@@ -22,6 +23,7 @@ function AppContent() {
         </Routes>
       </main>
       {!isAdmin && <Footer />}
+      <FloatingWhatsApp />
     </div>
   )
 }

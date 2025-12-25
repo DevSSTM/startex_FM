@@ -628,18 +628,24 @@ const BookingPage = () => {
 
                     {/* Step 6: Confirmation */}
                     {step === 6 && (
-                        <div className="step-content success">
-                            <div className="success-icon">
-                                <CheckCircle size={64} />
+                        <div className="step-content success-container">
+                            <div className="success-icon-wrapper">
+                                <CheckCircle size={80} className="success-icon-main" />
                             </div>
-                            <h3>Booking Confirmed!</h3>
-                            <p>Thank you for choosing STRATEX. Our team will contact you shortly.</p>
-                            <button className="btn-whatsapp" onClick={sendToWhatsApp}>
-                                <Send size={18} /> Message on WhatsApp
-                            </button>
-                            <button className="btn-text" onClick={() => window.location.href = '/'}>
-                                Back to Home
-                            </button>
+                            <div className="success-text">
+                                <h3>Booking Confirmed!</h3>
+                                <p>Thank you for choosing <strong>STRATEX</strong>. Your request has been received and our team will contact you shortly to finalize the details.</p>
+                            </div>
+
+                            <div className="success-actions">
+                                <button className="btn-whatsapp-large" onClick={sendToWhatsApp}>
+                                    <Send size={20} />
+                                    <span>Send Details via WhatsApp</span>
+                                </button>
+                                <button className="btn-home-outline" onClick={() => window.location.href = '/'}>
+                                    Return to Home
+                                </button>
+                            </div>
                         </div>
                     )}
                 </div>
