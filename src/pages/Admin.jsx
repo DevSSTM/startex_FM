@@ -427,6 +427,7 @@ const Admin = () => {
                                     <thead>
                                         <tr>
                                             <th>ID</th>
+                                            <th>Submitted At</th>
                                             <th>Customer Details</th>
                                             <th>Value</th>
                                             <th>Allocated Vendor</th>
@@ -438,6 +439,14 @@ const Admin = () => {
                                         {filteredBookings.map((booking, index) => (
                                             <tr key={booking.id}>
                                                 <td className="id-cell">#{booking.id.toString().padStart(3, '0')}</td>
+                                                <td style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: '500' }}>
+                                                    {booking.createdAt ? (
+                                                        <>
+                                                            {new Date(booking.createdAt).toLocaleDateString()}<br />
+                                                            {new Date(booking.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                        </>
+                                                    ) : 'N/A'}
+                                                </td>
                                                 <td>
                                                     <div className="user-info">
                                                         <div className="user-avatar">{booking.name.charAt(0)}</div>
@@ -847,6 +856,12 @@ const Admin = () => {
                                         <div className="detail-item full-width">
                                             <label>Address</label>
                                             <p>{viewBooking.address}</p>
+                                        </div>
+                                        <div className="detail-item full-width" style={{ marginTop: '5px' }}>
+                                            <label>Submitted At</label>
+                                            <p style={{ color: '#64748b' }}>
+                                                {viewBooking.createdAt ? new Date(viewBooking.createdAt).toLocaleString() : 'Not Available'}
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
