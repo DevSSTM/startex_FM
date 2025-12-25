@@ -193,24 +193,27 @@
 }
 
 .tick-icon {
-    color: #10b981;
     font-weight: bold;
     font-size: 1.1rem;
     line-height: 1;
 }
 
+.tick-item.is-normal .tick-icon {
+    color: var(--primary);
+    /* Navy for standard points */
+}
+
+.tick-item.is-extra .tick-icon {
+    color: #10b981;
+    /* Green for deep clean additions */
+}
+
 .tick-item.excluded {
-    color: #94a3b8;
+    color: #94A3B8;
 }
 
 .tick-item.excluded .tick-icon {
     color: #ef4444;
-}
-
-.extra-tick {
-    color: #f59e0b !important;
-    /* Amber for deep clean additional */
-    font-weight: 900;
 }
 
 .card-select-btn {

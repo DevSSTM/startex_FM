@@ -32,7 +32,8 @@ const Home = () => {
                 type: 'normal',
                 features: allTasks.map((t, idx) => ({
                     ...t,
-                    included: idx < 7
+                    included: idx < 7,
+                    isExtra: false
                 })),
             },
             {
@@ -43,7 +44,8 @@ const Home = () => {
                 featured: true,
                 features: allTasks.map((t, idx) => ({
                     ...t,
-                    included: true
+                    included: true,
+                    isExtra: idx >= 7
                 })),
             }
         ]
@@ -122,7 +124,7 @@ const Home = () => {
                                 </div>
                                 <ul className="service-list tick-list">
                                     {service.features?.map((feat, i) => (
-                                        <li key={i} className={feat.included ? 'included' : 'excluded'}>
+                                        <li key={i} className={`${feat.included ? 'included' : 'excluded'} ${feat.isExtra ? 'is-extra' : 'is-normal'}`}>
                                             <span className="tick-box">{feat.included ? '✓' : '✕'}</span>
                                             {feat.text}
                                         </li>

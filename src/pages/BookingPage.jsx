@@ -26,10 +26,8 @@ const BookingPage = () => {
     const [totalPrice, setTotalPrice] = useState(0)
 
     const AVAILABLE_ADDONS = [
-        { id: 'floor', name: 'Floor buffing', price: 3000, color: '#ea580c', bg: '#fff7ed' },
-        { id: 'carpet', name: 'Carpet Shampooing', price: 3000, color: '#7c3aed', bg: '#f5f3ff' },
-        { id: 'ac', name: 'AC Cleaning', price: 2500, color: '#2563eb', bg: '#dbeafe' },
-        { id: 'fridge', name: 'Refrigerator Cleaning', price: 1500, color: '#059669', bg: '#d1fae5' }
+        { id: 'floor', name: 'Floor buffing', price: 3000, color: '#f59e0b', bg: '#fffbeb' },
+        { id: 'carpet', name: 'Carpet Shampooing', price: 3000, color: '#10b981', bg: '#ecfdf5' }
     ]
 
     useEffect(() => {
@@ -58,7 +56,8 @@ const BookingPage = () => {
                 type: 'normal',
                 features: allTasks.map((t, idx) => ({
                     ...t,
-                    included: idx < 7
+                    included: idx < 7,
+                    isExtra: false
                 })),
             },
             {
@@ -68,7 +67,8 @@ const BookingPage = () => {
                 type: 'deep',
                 features: allTasks.map((t, idx) => ({
                     ...t,
-                    included: true
+                    included: true,
+                    isExtra: idx >= 7
                 })),
             }
         ]
@@ -288,7 +288,7 @@ const BookingPage = () => {
                                         {service.features && (
                                             <ul className="card-features tick-points">
                                                 {service.features.map((item, i) => (
-                                                    <li key={i} className={`tick-item ${!item.included ? 'excluded' : ''}`}>
+                                                    <li key={i} className={`tick-item ${!item.included ? 'excluded' : ''} ${item.isExtra ? 'is-extra' : 'is-normal'}`}>
                                                         <span className="tick-icon">
                                                             {item.included ? '✓' : '✕'}
                                                         </span>

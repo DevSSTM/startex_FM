@@ -382,7 +382,22 @@
     font-weight: bold;
 }
 
-.tick-list li.included .tick-box {
+.tick-list li.included.is-normal .tick-box {
+    color: var(--secondary);
+    /* Using secondary Light Blue for contrast on dark background? Or just use Navy/White */
+}
+
+.tick-list li.included.is-extra .tick-box {
+    color: #10b981;
+    /* Green for extra deep items */
+}
+
+/* For the featured card which matches primary, we need high contrast */
+.service-card.featured .tick-list li.included.is-normal .tick-box {
+    color: var(--primary);
+}
+
+.service-card.featured .tick-list li.included.is-extra .tick-box {
     color: #10b981;
 }
 
