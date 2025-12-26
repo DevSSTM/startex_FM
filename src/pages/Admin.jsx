@@ -30,7 +30,8 @@ import {
     UserPlus,
     UserCheck,
     MapPin,
-    Phone
+    Phone,
+    ShieldCheck
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import './Admin.css'
@@ -81,6 +82,19 @@ const Admin = () => {
     const [showAllocateModal, setShowAllocateModal] = useState(false)
     const [selectedBookingForAlloc, setSelectedBookingForAlloc] = useState(null)
 
+    // Supervisor State
+    const [supervisors, setSupervisors] = useState([])
+    const [showSupervisorModal, setShowSupervisorModal] = useState(false)
+    const [supervisorFormData, setSupervisorFormData] = useState({
+        name: '',
+        phone: '',
+        nic: '',
+        address: '',
+        level: 'Senior'
+    })
+    const [showSupAllocateModal, setShowSupAllocateModal] = useState(false)
+    const [selectedBookingForSupAlloc, setSelectedBookingForSupAlloc] = useState(null)
+
     const invoiceRef = useRef()
 
     useEffect(() => {
@@ -125,6 +139,10 @@ const Admin = () => {
         // Initialize Vendors
         const savedVendors = JSON.parse(localStorage.getItem('vendors') || '[]')
         setVendors(savedVendors)
+
+        // Initialize Supervisors
+        const savedSupervisors = JSON.parse(localStorage.getItem('supervisors') || '[]')
+        setSupervisors(savedSupervisors)
 
         // Stats calculation
         const newStats = bookingData.reduce((acc, curr) => {
@@ -234,18 +252,40 @@ const Admin = () => {
         const updatedBookings = bookings.map(b =>
             b.id === selectedBookingForAlloc.id ? { ...b, assignedVendor: vendor.name, vendorId: vendor.id } : b
         )
-        // Re-sort to maintain order if needed, or just update
-        const updatedOrdered = [...updatedBookings].reverse() // simplistic re-sort if bookings was reversed originally? 
-        // Actually bookings state is already reversed in UI but stored usually normal. 
-        // Let's just update state and strictly sync.
-
-        // Wait, bookings state is displayed as sliced/reversed. "updated" map is on 'bookings'.
-        // Let's just setBookings with the mapped result.
         setBookings(updatedBookings)
-        localStorage.setItem('bookings', JSON.stringify(updatedBookings.slice().reverse())) // Assuming storage is chronological
-
+        localStorage.setItem('bookings', JSON.stringify(updatedBookings.slice().reverse()))
         setShowAllocateModal(false)
         setSelectedBookingForAlloc(null)
+    }
+
+    // Supervisor Handlers
+    const handleSupervisorSubmit = (e) => {
+        e.preventDefault()
+        const newSup = { ...supervisorFormData, id: Date.now(), joinedDate: new Date().toLocaleDateString() }
+        const updated = [...supervisors, newSup]
+        setSupervisors(updated)
+        localStorage.setItem('supervisors', JSON.stringify(updated))
+        setShowSupervisorModal(false)
+        setSupervisorFormData({ name: '', phone: '', nic: '', address: '', level: 'Senior' })
+    }
+
+    const deleteSupervisor = (id) => {
+        if (confirm('Remove this supervisor?')) {
+            const updated = supervisors.filter(s => s.id !== id)
+            setSupervisors(updated)
+            localStorage.setItem('supervisors', JSON.stringify(updated))
+        }
+    }
+
+    const handleAllocateSupervisor = (supId) => {
+        const supervisor = supervisors.find(s => s.id === supId)
+        const updatedBookings = bookings.map(b =>
+            b.id === selectedBookingForSupAlloc.id ? { ...b, assignedSupervisor: supervisor.name, supervisorId: supervisor.id } : b
+        )
+        setBookings(updatedBookings)
+        localStorage.setItem('bookings', JSON.stringify(updatedBookings.slice().reverse()))
+        setShowSupAllocateModal(false)
+        selectedBookingForSupAlloc(null)
     }
 
     const clearAllBookings = () => {
@@ -332,6 +372,13 @@ const Admin = () => {
                         <Briefcase size={20} />
                         <span>Vendors</span>
                     </button>
+                    <button
+                        className={activeTab === 'supervisors' ? 'active' : ''}
+                        onClick={() => setActiveTab('supervisors')}
+                    >
+                        <ShieldCheck size={20} />
+                        <span>Supervisors</span>
+                    </button>
 
                     <div className="sidebar-divider"></div>
 
@@ -350,6 +397,7 @@ const Admin = () => {
                             {activeTab === 'bookings' && 'Bookings Overview'}
                             {activeTab === 'services' && 'Service Management'}
                             {activeTab === 'vendors' && 'Vendor Management'}
+                            {activeTab === 'supervisors' && 'Supervisor Management'}
                         </h1>
                         <p>Welcome back, Admin</p>
                     </div>
@@ -434,7 +482,7 @@ const Admin = () => {
                                             <th>Submitted At</th>
                                             <th>Customer Details</th>
                                             <th>Value</th>
-                                            <th>Allocated Vendor</th>
+                                            <th>Assignments</th>
                                             <th>Status</th>
                                             <th style={{ textAlign: 'right' }}>Action</th>
                                         </tr>
@@ -471,24 +519,43 @@ const Admin = () => {
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    {booking.assignedVendor ? (
-                                                        <div
-                                                            className="vendor-badge"
-                                                            onClick={() => { setSelectedBookingForAlloc(booking); setShowAllocateModal(true); }}
-                                                            style={{ cursor: 'pointer', paddingRight: '8px' }}
-                                                            title="Click to reassign vendor"
-                                                        >
-                                                            <UserCheck size={14} />
-                                                            <span>{booking.assignedVendor}</span>
-                                                            <Edit size={12} style={{ marginLeft: '6px', opacity: 0.7 }} />
-                                                        </div>
-                                                    ) : (
-                                                        booking.status !== 'cancelled' && (
-                                                            <button className="btn-assign" onClick={() => { setSelectedBookingForAlloc(booking); setShowAllocateModal(true); }}>
-                                                                <UserPlus size={14} /> Assign
-                                                            </button>
-                                                        )
-                                                    )}
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                        {/* Supervisor Assignment */}
+                                                        {booking.assignedSupervisor ? (
+                                                            <div
+                                                                className="vendor-badge supervisor"
+                                                                onClick={() => { setSelectedBookingForSupAlloc(booking); setShowSupAllocateModal(true); }}
+                                                                style={{ cursor: 'pointer', borderColor: '#3b82f6', color: '#1d4ed8', background: '#eff6ff' }}
+                                                            >
+                                                                <ShieldCheck size={14} />
+                                                                <span>{booking.assignedSupervisor}</span>
+                                                            </div>
+                                                        ) : (
+                                                            booking.status !== 'cancelled' && (
+                                                                <button className="btn-assign supervisor" style={{ borderColor: '#3b82f6', color: '#3b82f6' }} onClick={() => { setSelectedBookingForSupAlloc(booking); setShowSupAllocateModal(true); }}>
+                                                                    <Plus size={12} /> Sup.
+                                                                </button>
+                                                            )
+                                                        )}
+
+                                                        {/* Vendor Assignment */}
+                                                        {booking.assignedVendor ? (
+                                                            <div
+                                                                className="vendor-badge"
+                                                                onClick={() => { setSelectedBookingForAlloc(booking); setShowAllocateModal(true); }}
+                                                                style={{ cursor: 'pointer' }}
+                                                            >
+                                                                <UserCheck size={14} />
+                                                                <span>{booking.assignedVendor}</span>
+                                                            </div>
+                                                        ) : (
+                                                            booking.status !== 'cancelled' && (
+                                                                <button className="btn-assign" onClick={() => { setSelectedBookingForAlloc(booking); setShowAllocateModal(true); }}>
+                                                                    <UserPlus size={14} /> Vendor
+                                                                </button>
+                                                            )
+                                                        )}
+                                                    </div>
                                                 </td>
                                                 <td>
                                                     <span className={`status-badge ${booking.status}`}>
@@ -585,7 +652,7 @@ const Admin = () => {
                             ))}
                         </div>
                     </div>
-                ) : (
+                ) : activeTab === 'vendors' ? (
                     <div className="vendors-container no-print">
                         <div className="section-header">
                             <div className="header-text">
@@ -626,7 +693,51 @@ const Admin = () => {
                             )}
                         </div>
                     </div>
-                )}
+                ) : (
+                    <div className="vendors-container no-print">
+                        <div className="section-header">
+                            <div className="header-text">
+                                <h2>Field Supervisors</h2>
+                                <p>Manage your supervision and quality control team</p>
+                            </div>
+                            <button className="btn-primary" onClick={() => setShowSupervisorModal(true)}>
+                                <UserPlus size={18} /> Add Supervisor
+                            </button>
+                        </div>
+                        <div className="vendors-grid">
+                            {supervisors.map(sup => (
+                                <div key={sup.id} className="vendor-card glass-card" style={{ borderLeft: '4px solid #3b82f6' }}>
+                                    <div className="vendor-header">
+                                        <div className="vendor-avatar" style={{ background: '#3b82f6' }}>
+                                            {sup.name.charAt(0)}
+                                        </div>
+                                        <div className="vendor-meta">
+                                            <h4>{sup.name}</h4>
+                                            <span className="vendor-nic">NIC: {sup.nic}</span>
+                                        </div>
+                                        <button className="icon-btn cancel" onClick={() => deleteSupervisor(sup.id)}><Trash2 size={16} /></button>
+                                    </div>
+                                    <div className="vendor-body">
+                                        <div className="v-item"><Phone size={14} /> {sup.phone}</div>
+                                        <div className="v-item"><MapPin size={14} /> {sup.address}</div>
+                                        <div className="v-specialty" style={{ background: '#eff6ff', color: '#1d4ed8' }}>
+                                            <ShieldCheck size={14} /> {sup.level}
+                                        </div>
+                                    </div>
+                                    <div className="vendor-footer">
+                                        <span className="v-date">Joined {sup.joinedDate}</span>
+                                    </div>
+                                </div>
+                            ))}
+                            {supervisors.length === 0 && (
+                                <div className="empty-state">
+                                    <p>No supervisors registered yet.</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )
+                }
             </main >
 
             {/* Service Modal */}
@@ -735,7 +846,7 @@ const Admin = () => {
                         <div className="invoice-paper" id="invoice-bill">
                             <header className="invoice-header">
                                 <div className="invoice-logo">
-                                    <img src="/logo/logo.png" alt="Stratex Logo" style={{ height: '140px', objectFit: 'contain' }} />
+                                    <img src="/logo/logo.png" alt="Stratex Logo" style={{ height: '140px', objectFit: 'contain', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.1)) brightness(1.05)' }} />
                                 </div>
                                 <div className="invoice-meta">
                                     <h2>INVOICE</h2>
@@ -749,7 +860,13 @@ const Admin = () => {
                                     <h3>BILL TO</h3>
                                     <strong>{selectedBooking.name}</strong>
                                     <p>{selectedBooking.address}</p>
-                                    <p>{selectedBooking.phone}</p>
+                                    <p style={{ marginTop: '5px' }}>{selectedBooking.phone}</p>
+                                    {(selectedBooking.assignedSupervisor || selectedBooking.assignedVendor) && (
+                                        <div style={{ marginTop: '10px', padding: '10px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                            {selectedBooking.assignedSupervisor && <p style={{ fontSize: '0.85rem' }}><strong>Supervisor:</strong> {selectedBooking.assignedSupervisor}</p>}
+                                            {selectedBooking.assignedVendor && <p style={{ fontSize: '0.85rem' }}><strong>Team/Vendor:</strong> {selectedBooking.assignedVendor}</p>}
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="bill-from">
                                     <h3>FROM</h3>
@@ -872,6 +989,18 @@ const Admin = () => {
                                                 {viewBooking.createdAt ? new Date(viewBooking.createdAt).toLocaleString() : 'Not Available'}
                                             </p>
                                         </div>
+                                        {viewBooking.assignedSupervisor && (
+                                            <div className="detail-item full-width" style={{ marginTop: '5px' }}>
+                                                <label>Assigned Supervisor</label>
+                                                <p className="highlight" style={{ background: '#eff6ff', color: '#1d4ed8' }}>{viewBooking.assignedSupervisor}</p>
+                                            </div>
+                                        )}
+                                        {viewBooking.assignedVendor && (
+                                            <div className="detail-item full-width" style={{ marginTop: '5px' }}>
+                                                <label>Assigned Team/Vendor</label>
+                                                <p className="highlight">{viewBooking.assignedVendor}</p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
@@ -976,7 +1105,7 @@ const Admin = () => {
                 )
             }
 
-            {/* Allocate Modal */}
+            {/* Vendor Allocate Modal */}
             {
                 showAllocateModal && selectedBookingForAlloc && (
                     <div className="modal-overlay no-print">
@@ -1003,7 +1132,80 @@ const Admin = () => {
                     </div>
                 )
             }
-        </div >
+
+            {/* Supervisor Modal */}
+            {
+                showSupervisorModal && (
+                    <div className="modal-overlay no-print">
+                        <div className="modal-content glass-card">
+                            <div className="modal-header">
+                                <h2>Register New Supervisor</h2>
+                                <button className="close-btn" onClick={() => setShowSupervisorModal(false)}><X /></button>
+                            </div>
+                            <form onSubmit={handleSupervisorSubmit} className="service-form">
+                                <div className="form-grid">
+                                    <div className="form-group">
+                                        <label>Full Name</label>
+                                        <input required type="text" value={supervisorFormData.name} onChange={e => setSupervisorFormData({ ...supervisorFormData, name: e.target.value })} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>NIC Number</label>
+                                        <input type="text" value={supervisorFormData.nic} onChange={e => setSupervisorFormData({ ...supervisorFormData, nic: e.target.value })} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Phone Number</label>
+                                        <input required type="tel" value={supervisorFormData.phone} onChange={e => setSupervisorFormData({ ...supervisorFormData, phone: e.target.value })} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Level</label>
+                                        <select value={supervisorFormData.level} onChange={e => setSupervisorFormData({ ...supervisorFormData, level: e.target.value })}>
+                                            <option value="Senior">Senior Supervisor</option>
+                                            <option value="Associate">Field Supervisor</option>
+                                            <option value="Trainee">Trainee</option>
+                                        </select>
+                                    </div>
+                                    <div className="form-group full-width">
+                                        <label>Address</label>
+                                        <textarea value={supervisorFormData.address} onChange={e => setSupervisorFormData({ ...supervisorFormData, address: e.target.value })}></textarea>
+                                    </div>
+                                </div>
+                                <div className="modal-footer">
+                                    <button type="submit" className="btn-primary">Register Supervisor</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )
+            }
+
+            {/* Allocate Supervisor Modal */}
+            {
+                showSupAllocateModal && selectedBookingForSupAlloc && (
+                    <div className="modal-overlay no-print">
+                        <div className="modal-content glass-card" style={{ maxWidth: '500px' }}>
+                            <div className="modal-header">
+                                <h2>Assign Supervisor</h2>
+                                <button className="close-btn" onClick={() => setShowSupAllocateModal(false)}><X /></button>
+                            </div>
+                            <div className="allocate-list">
+                                <p style={{ marginBottom: '20px', color: '#64748b' }}>Select a supervisor to oversee <strong>Order #{selectedBookingForSupAlloc.id}</strong></p>
+                                {supervisors.map(sup => (
+                                    <div key={sup.id} className="vendor-create-card" onClick={() => handleAllocateSupervisor(sup.id)} style={{ borderLeft: '4px solid #3b82f6' }}>
+                                        <div className="vendor-avatar small" style={{ background: '#3b82f6' }}>{sup.name.charAt(0)}</div>
+                                        <div>
+                                            <h4>{sup.name}</h4>
+                                            <span>{sup.level}</span>
+                                        </div>
+                                        <ChevronRight size={16} style={{ marginLeft: 'auto' }} />
+                                    </div>
+                                ))}
+                                {supervisors.length === 0 && <p>No supervisors found. Please register supervisors first.</p>}
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+        </div>
     )
 }
 
