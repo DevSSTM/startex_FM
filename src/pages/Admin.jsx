@@ -960,7 +960,7 @@ const Admin = () => {
                                         </td>
                                         <td>{selectedBooking.rooms} Rooms</td>
                                         <td style={{ textAlign: 'right' }}>
-                                            LKR {(selectedBooking.baseAndRoomsPrice || selectedBooking.price).toLocaleString()}
+                                            {"LKR "} {(selectedBooking.baseAndRoomsPrice || selectedBooking.price).toLocaleString()}
                                         </td>
                                     </tr>
                                     {selectedBooking.addonDetails && selectedBooking.addonDetails.map((addon, idx) => (
@@ -972,7 +972,7 @@ const Admin = () => {
                                                 </div>
                                             </td>
                                             <td style={{ textAlign: 'right', borderBottom: '1px solid #f1f5f9' }}>
-                                                LKR {addon.price.toLocaleString()}
+                                                {"LKR "} {addon.price.toLocaleString()}
                                             </td>
                                         </tr>
                                     ))}
@@ -982,12 +982,12 @@ const Admin = () => {
                             <div className="invoice-summary">
                                 <div className="summary-row">
                                     <span>Service Subtotal</span>
-                                    <span>LKR {(selectedBooking.baseAndRoomsPrice || selectedBooking.price).toLocaleString()}</span>
+                                    <span>{"LKR "} {(selectedBooking.baseAndRoomsPrice || selectedBooking.price).toLocaleString()}</span>
                                 </div>
                                 {selectedBooking.addonDetails && selectedBooking.addonDetails.length > 0 && (
                                     <div className="summary-row">
                                         <span>Add-ons Total</span>
-                                        <span>LKR {selectedBooking.addonDetails.reduce((acc, a) => acc + a.price, 0).toLocaleString()}</span>
+                                        <span>{"LKR "} {selectedBooking.addonDetails.reduce((acc, a) => acc + a.price, 0).toLocaleString()}</span>
                                     </div>
                                 )}
                                 <div className="summary-row">
@@ -996,7 +996,7 @@ const Admin = () => {
                                 </div>
                                 <div className="summary-row grand-total">
                                     <span>Amount Due</span>
-                                    <span>LKR {selectedBooking.price.toLocaleString()}</span>
+                                    <span>{"LKR "} {selectedBooking.price.toLocaleString()}</span>
                                 </div>
                             </div>
 
