@@ -735,7 +735,7 @@ const Admin = () => {
                         <div className="invoice-paper" id="invoice-bill">
                             <header className="invoice-header">
                                 <div className="invoice-logo">
-                                    <img src="/logo/logo.png" alt="Stratex Logo" style={{ height: '80px', objectFit: 'contain' }} />
+                                    <img src="/logo/logo.png" alt="Stratex Logo" style={{ height: '140px', objectFit: 'contain' }} />
                                 </div>
                                 <div className="invoice-meta">
                                     <h2>INVOICE</h2>
@@ -754,8 +754,9 @@ const Admin = () => {
                                 <div className="bill-from">
                                     <h3>FROM</h3>
                                     <strong>STRATEX FACILITY MGT</strong>
-                                    <p>123 Clean St, Colombo, SL</p>
-                                    <p>+94 11 234 5678</p>
+                                    <p>Colombo, Sri Lanka</p>
+                                    <p>(+94) 884 0804 / (+94) 391 7244</p>
+                                    <p>Email: startexfacilitiesmanagement@gmail.com</p>
                                 </div>
                             </div>
 
@@ -823,11 +824,15 @@ const Admin = () => {
                             <footer className="invoice-footer">
                                 <div className="payment-info">
                                     <h3>PAYMENT METHOD</h3>
-                                    <p>Bank Transfer / Cash on Delivery</p>
-                                    <p>Bank: HNB | Account: 085020385948</p>
+                                    <p>Cash or Bank Transfer</p>
+                                    <div style={{ marginTop: '5px' }}>
+                                        <strong>Bank : BOC</strong><br />
+                                        <strong>Account Name : K.S.A De Alwis</strong><br />
+                                        <strong>Account Number : 0089550550</strong><br />
+                                        <strong>Branch : Makola</strong>
+                                    </div>
                                 </div>
                                 <div className="thanks-msg">
-                                    <p>Thank you for choosing Stratex!</p>
                                     <p>Thank you for choosing Stratex!</p>
                                 </div>
                             </footer>
