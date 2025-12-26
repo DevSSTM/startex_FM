@@ -995,7 +995,7 @@ const Admin = () => {
                                     <span>LKR 0</span>
                                 </div>
                                 <div className="summary-row grand-total">
-                                    <span>Amount Due</span>
+                                    <span></span>
                                     <span>{"LKR "} {selectedBooking.price.toLocaleString()}</span>
                                 </div>
                             </div>
