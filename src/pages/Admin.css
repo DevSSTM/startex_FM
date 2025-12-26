@@ -1180,6 +1180,54 @@ td {
     border-color: #dbeafe;
 }
 
+.vendor-badge img {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: -2px;
+}
+
+.image-upload-btn:hover {
+    border-color: var(--primary) !important;
+    background: #f0f7ff !important;
+    color: var(--primary) !important;
+}
+
+.image-upload-btn:hover svg {
+    color: var(--primary) !important;
+    transform: scale(1.1);
+}
+
+.image-upload-btn svg {
+    transition: all 0.2s ease;
+}
+
+.vendor-card .action-row {
+    display: flex;
+    gap: 8px;
+}
+
+.vendor-card .icon-btn {
+    padding: 6px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    color: #64748b;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.vendor-card .icon-btn:hover {
+    background: #e2e8f0;
+    color: var(--primary);
+}
+
+.vendor-card .icon-btn.cancel:hover {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
 .btn-assign.supervisor:hover {
     border-color: #3b82f6;
     color: #3b82f6;

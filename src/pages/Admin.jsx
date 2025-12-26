@@ -77,7 +77,8 @@ const Admin = () => {
         phone: '',
         nic: '',
         address: '',
-        specialty: 'General'
+        specialty: 'General',
+        image: ''
     })
     const [showAllocateModal, setShowAllocateModal] = useState(false)
     const [selectedBookingForAlloc, setSelectedBookingForAlloc] = useState(null)
@@ -90,10 +91,15 @@ const Admin = () => {
         phone: '',
         nic: '',
         address: '',
-        level: 'Senior'
+        level: 'Senior',
+        image: ''
     })
     const [showSupAllocateModal, setShowSupAllocateModal] = useState(false)
     const [selectedBookingForSupAlloc, setSelectedBookingForSupAlloc] = useState(null)
+
+    // Editing State
+    const [editingVendor, setEditingVendor] = useState(null)
+    const [editingSupervisor, setEditingSupervisor] = useState(null)
 
     const invoiceRef = useRef()
 
@@ -151,6 +157,25 @@ const Admin = () => {
         }, { pending: 0, confirmed: 0, completed: 0, cancelled: 0 })
         setStats(newStats)
     }, [])
+
+    const handleImageChange = (e, type) => {
+        const file = e.target.files[0]
+        if (file) {
+            if (file.size > 2 * 1024 * 1024) {
+                alert("Image too large. Please use an image smaller than 2MB.")
+                return
+            }
+            const reader = new FileReader()
+            reader.onloadend = () => {
+                if (type === 'vendor') {
+                    setVendorFormData(prev => ({ ...prev, image: reader.result }))
+                } else {
+                    setSupervisorFormData(prev => ({ ...prev, image: reader.result }))
+                }
+            }
+            reader.readAsDataURL(file)
+        }
+    }
 
     const handleLogin = (e) => {
         e.preventDefault()
@@ -231,12 +256,24 @@ const Admin = () => {
     // Vendor Handlers
     const handleVendorSubmit = (e) => {
         e.preventDefault()
-        const newVendor = { ...vendorFormData, id: Date.now(), joinedDate: new Date().toLocaleDateString() }
-        const updatedVendors = [...vendors, newVendor]
+        let updatedVendors
+        if (editingVendor) {
+            updatedVendors = vendors.map(v => v.id === editingVendor.id ? { ...vendorFormData, id: v.id, joinedDate: v.joinedDate } : v)
+        } else {
+            const newVendor = { ...vendorFormData, id: Date.now(), joinedDate: new Date().toLocaleDateString() }
+            updatedVendors = [...vendors, newVendor]
+        }
         setVendors(updatedVendors)
         localStorage.setItem('vendors', JSON.stringify(updatedVendors))
         setShowVendorModal(false)
-        setVendorFormData({ name: '', phone: '', nic: '', address: '', specialty: 'General' })
+        setEditingVendor(null)
+        setVendorFormData({ name: '', phone: '', nic: '', address: '', specialty: 'General', image: '' })
+    }
+
+    const openEditVendor = (vendor) => {
+        setEditingVendor(vendor)
+        setVendorFormData(vendor)
+        setShowVendorModal(true)
     }
 
     const deleteVendor = (id) => {
@@ -261,12 +298,24 @@ const Admin = () => {
     // Supervisor Handlers
     const handleSupervisorSubmit = (e) => {
         e.preventDefault()
-        const newSup = { ...supervisorFormData, id: Date.now(), joinedDate: new Date().toLocaleDateString() }
-        const updated = [...supervisors, newSup]
+        let updated
+        if (editingSupervisor) {
+            updated = supervisors.map(s => s.id === editingSupervisor.id ? { ...supervisorFormData, id: s.id, joinedDate: s.joinedDate } : s)
+        } else {
+            const newSup = { ...supervisorFormData, id: Date.now(), joinedDate: new Date().toLocaleDateString() }
+            updated = [...supervisors, newSup]
+        }
         setSupervisors(updated)
         localStorage.setItem('supervisors', JSON.stringify(updated))
         setShowSupervisorModal(false)
-        setSupervisorFormData({ name: '', phone: '', nic: '', address: '', level: 'Senior' })
+        setEditingSupervisor(null)
+        setSupervisorFormData({ name: '', phone: '', nic: '', address: '', level: 'Senior', image: '' })
+    }
+
+    const openEditSupervisor = (sup) => {
+        setEditingSupervisor(sup)
+        setSupervisorFormData(sup)
+        setShowSupervisorModal(true)
     }
 
     const deleteSupervisor = (id) => {
@@ -525,9 +574,11 @@ const Admin = () => {
                                                             <div
                                                                 className="vendor-badge supervisor"
                                                                 onClick={() => { setSelectedBookingForSupAlloc(booking); setShowSupAllocateModal(true); }}
-                                                                style={{ cursor: 'pointer', borderColor: '#3b82f6', color: '#1d4ed8', background: '#eff6ff' }}
+                                                                style={{ cursor: 'pointer' }}
                                                             >
-                                                                <ShieldCheck size={14} />
+                                                                {booking.supervisorId && supervisors.find(s => s.id === booking.supervisorId)?.image && (
+                                                                    <img src={supervisors.find(s => s.id === booking.supervisorId).image} alt="" style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover', border: '1px solid #3b82f6' }} />
+                                                                )}
                                                                 <span>{booking.assignedSupervisor}</span>
                                                             </div>
                                                         ) : (
@@ -545,7 +596,9 @@ const Admin = () => {
                                                                 onClick={() => { setSelectedBookingForAlloc(booking); setShowAllocateModal(true); }}
                                                                 style={{ cursor: 'pointer' }}
                                                             >
-                                                                <UserCheck size={14} />
+                                                                {booking.vendorId && vendors.find(v => v.id === booking.vendorId)?.image && (
+                                                                    <img src={vendors.find(v => v.id === booking.vendorId).image} alt="" style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover', border: '1px solid #10b981' }} />
+                                                                )}
                                                                 <span>{booking.assignedVendor}</span>
                                                             </div>
                                                         ) : (
@@ -608,7 +661,7 @@ const Admin = () => {
                                 </table>
                             </div>
                         </div>
-                    </div>
+                    </div >
                 ) : activeTab === 'services' ? (
                     <div className="services-mgt-container no-print">
                         <div className="section-header">
@@ -659,7 +712,7 @@ const Admin = () => {
                                 <h2>Registered Vendors</h2>
                                 <p>Manage your cleaning staff database</p>
                             </div>
-                            <button className="btn-primary" onClick={() => setShowVendorModal(true)}>
+                            <button className="btn-primary" onClick={() => { setEditingVendor(null); setVendorFormData({ name: '', phone: '', nic: '', address: '', specialty: 'General', image: '' }); setShowVendorModal(true); }}>
                                 <UserPlus size={18} /> Add Vendor
                             </button>
                         </div>
@@ -668,13 +721,20 @@ const Admin = () => {
                                 <div key={vendor.id} className="vendor-card glass-card">
                                     <div className="vendor-header">
                                         <div className="vendor-avatar">
-                                            {vendor.name.charAt(0)}
+                                            {vendor.image ? (
+                                                <img src={vendor.image} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                                            ) : (
+                                                vendor.name.charAt(0)
+                                            )}
                                         </div>
                                         <div className="vendor-meta">
                                             <h4>{vendor.name}</h4>
                                             <span className="vendor-nic">NIC: {vendor.nic}</span>
                                         </div>
-                                        <button className="icon-btn cancel" onClick={() => deleteVendor(vendor.id)}><Trash2 size={16} /></button>
+                                        <div className="action-row" style={{ marginLeft: 'auto' }}>
+                                            <button className="icon-btn" onClick={() => openEditVendor(vendor)}><Edit size={16} /></button>
+                                            <button className="icon-btn cancel" onClick={() => deleteVendor(vendor.id)}><Trash2 size={16} /></button>
+                                        </div>
                                     </div>
                                     <div className="vendor-body">
                                         <div className="v-item"><Phone size={14} /> {vendor.phone}</div>
@@ -700,7 +760,7 @@ const Admin = () => {
                                 <h2>Field Supervisors</h2>
                                 <p>Manage your supervision and quality control team</p>
                             </div>
-                            <button className="btn-primary" onClick={() => setShowSupervisorModal(true)}>
+                            <button className="btn-primary" onClick={() => { setEditingSupervisor(null); setSupervisorFormData({ name: '', phone: '', nic: '', address: '', level: 'Senior', image: '' }); setShowSupervisorModal(true); }}>
                                 <UserPlus size={18} /> Add Supervisor
                             </button>
                         </div>
@@ -709,13 +769,20 @@ const Admin = () => {
                                 <div key={sup.id} className="vendor-card glass-card" style={{ borderLeft: '4px solid #3b82f6' }}>
                                     <div className="vendor-header">
                                         <div className="vendor-avatar" style={{ background: '#3b82f6' }}>
-                                            {sup.name.charAt(0)}
+                                            {sup.image ? (
+                                                <img src={sup.image} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                                            ) : (
+                                                sup.name.charAt(0)
+                                            )}
                                         </div>
                                         <div className="vendor-meta">
                                             <h4>{sup.name}</h4>
                                             <span className="vendor-nic">NIC: {sup.nic}</span>
                                         </div>
-                                        <button className="icon-btn cancel" onClick={() => deleteSupervisor(sup.id)}><Trash2 size={16} /></button>
+                                        <div className="action-row" style={{ marginLeft: 'auto' }}>
+                                            <button className="icon-btn" onClick={() => openEditSupervisor(sup)}><Edit size={16} /></button>
+                                            <button className="icon-btn cancel" onClick={() => deleteSupervisor(sup.id)}><Trash2 size={16} /></button>
+                                        </div>
                                     </div>
                                     <div className="vendor-body">
                                         <div className="v-item"><Phone size={14} /> {sup.phone}</div>
@@ -1066,11 +1133,39 @@ const Admin = () => {
                     <div className="modal-overlay no-print">
                         <div className="modal-content glass-card">
                             <div className="modal-header">
-                                <h2>Register New Vendor</h2>
+                                <h2>{editingVendor ? 'Edit Vendor Details' : 'Register New Vendor'}</h2>
                                 <button className="close-btn" onClick={() => setShowVendorModal(false)}><X /></button>
                             </div>
                             <form onSubmit={handleVendorSubmit} className="service-form">
                                 <div className="form-grid">
+                                    <div className="form-group full-width">
+                                        <label>Profile Picture</label>
+                                        <div className="image-upload-wrapper" style={{ margin: '10px 0' }}>
+                                            <input type="file" accept="image/*" onChange={(e) => handleImageChange(e, 'vendor')} id="vendor-image" style={{ display: 'none' }} />
+                                            <label htmlFor="vendor-image" className="image-upload-btn" style={{
+                                                width: '100px',
+                                                height: '100px',
+                                                border: '2px dashed #cbd5e1',
+                                                borderRadius: '50%',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                cursor: 'pointer',
+                                                overflow: 'hidden',
+                                                background: '#f8fafc'
+                                            }}>
+                                                {vendorFormData.image ? (
+                                                    <img src={vendorFormData.image} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                ) : (
+                                                    <>
+                                                        <Camera size={24} style={{ color: '#64748b' }} />
+                                                        <span style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '4px' }}>Upload</span>
+                                                    </>
+                                                )}
+                                            </label>
+                                        </div>
+                                    </div>
                                     <div className="form-group">
                                         <label>Full Name</label>
                                         <input required type="text" value={vendorFormData.name} onChange={e => setVendorFormData({ ...vendorFormData, name: e.target.value })} />
@@ -1097,7 +1192,7 @@ const Admin = () => {
                                     </div>
                                 </div>
                                 <div className="modal-footer">
-                                    <button type="submit" className="btn-primary">Register Vendor</button>
+                                    <button type="submit" className="btn-primary">{editingVendor ? 'Save Changes' : 'Register Vendor'}</button>
                                 </div>
                             </form>
                         </div>
@@ -1118,7 +1213,13 @@ const Admin = () => {
                                 <p style={{ marginBottom: '20px', color: '#64748b' }}>Select a registered vendor to assign to <strong>Order #{selectedBookingForAlloc.id}</strong></p>
                                 {vendors.map(vendor => (
                                     <div key={vendor.id} className="vendor-create-card" onClick={() => handleAllocate(vendor.id)}>
-                                        <div className="vendor-avatar small">{vendor.name.charAt(0)}</div>
+                                        <div className="vendor-avatar small">
+                                            {vendor.image ? (
+                                                <img src={vendor.image} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                                            ) : (
+                                                vendor.name.charAt(0)
+                                            )}
+                                        </div>
                                         <div>
                                             <h4>{vendor.name}</h4>
                                             <span>{vendor.specialty}</span>
@@ -1139,11 +1240,39 @@ const Admin = () => {
                     <div className="modal-overlay no-print">
                         <div className="modal-content glass-card">
                             <div className="modal-header">
-                                <h2>Register New Supervisor</h2>
+                                <h2>{editingSupervisor ? 'Edit Supervisor Details' : 'Register New Supervisor'}</h2>
                                 <button className="close-btn" onClick={() => setShowSupervisorModal(false)}><X /></button>
                             </div>
                             <form onSubmit={handleSupervisorSubmit} className="service-form">
                                 <div className="form-grid">
+                                    <div className="form-group full-width">
+                                        <label>Profile Picture</label>
+                                        <div className="image-upload-wrapper" style={{ margin: '10px 0' }}>
+                                            <input type="file" accept="image/*" onChange={(e) => handleImageChange(e, 'supervisor')} id="supervisor-image" style={{ display: 'none' }} />
+                                            <label htmlFor="supervisor-image" className="image-upload-btn" style={{
+                                                width: '100px',
+                                                height: '100px',
+                                                border: '2px dashed #cbd5e1',
+                                                borderRadius: '50%',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                cursor: 'pointer',
+                                                overflow: 'hidden',
+                                                background: '#f8fafc'
+                                            }}>
+                                                {supervisorFormData.image ? (
+                                                    <img src={supervisorFormData.image} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                ) : (
+                                                    <>
+                                                        <Camera size={24} style={{ color: '#64748b' }} />
+                                                        <span style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '4px' }}>Upload</span>
+                                                    </>
+                                                )}
+                                            </label>
+                                        </div>
+                                    </div>
                                     <div className="form-group">
                                         <label>Full Name</label>
                                         <input required type="text" value={supervisorFormData.name} onChange={e => setSupervisorFormData({ ...supervisorFormData, name: e.target.value })} />
@@ -1170,7 +1299,7 @@ const Admin = () => {
                                     </div>
                                 </div>
                                 <div className="modal-footer">
-                                    <button type="submit" className="btn-primary">Register Supervisor</button>
+                                    <button type="submit" className="btn-primary">{editingSupervisor ? 'Save Changes' : 'Register Supervisor'}</button>
                                 </div>
                             </form>
                         </div>
@@ -1191,7 +1320,13 @@ const Admin = () => {
                                 <p style={{ marginBottom: '20px', color: '#64748b' }}>Select a supervisor to oversee <strong>Order #{selectedBookingForSupAlloc.id}</strong></p>
                                 {supervisors.map(sup => (
                                     <div key={sup.id} className="vendor-create-card" onClick={() => handleAllocateSupervisor(sup.id)} style={{ borderLeft: '4px solid #3b82f6' }}>
-                                        <div className="vendor-avatar small" style={{ background: '#3b82f6' }}>{sup.name.charAt(0)}</div>
+                                        <div className="vendor-avatar small" style={{ background: '#3b82f6' }}>
+                                            {sup.image ? (
+                                                <img src={sup.image} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                                            ) : (
+                                                sup.name.charAt(0)
+                                            )}
+                                        </div>
                                         <div>
                                             <h4>{sup.name}</h4>
                                             <span>{sup.level}</span>
@@ -1205,7 +1340,7 @@ const Admin = () => {
                     </div>
                 )
             }
-        </div>
+        </div >
     )
 }
 
