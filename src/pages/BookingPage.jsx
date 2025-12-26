@@ -393,7 +393,7 @@ const BookingPage = () => {
                                             />
                                             <button onClick={() => setFormData(prev => ({ ...prev, rooms: prev.rooms + 1 }))}>+</button>
                                         </div>
-                                        <p className="input-hint">Additional 15% surcharge per bedroom beyond 2.</p>
+
                                     </div>
                                 </div>
                             )}
