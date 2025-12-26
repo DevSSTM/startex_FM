@@ -124,7 +124,7 @@
 .dashboard-logo img,
 .invoice-logo img {
     mix-blend-mode: multiply;
-    filter: contrast(110%) brightness(105%);
+    filter: contrast(105%);
 }
 
 /* Modals */

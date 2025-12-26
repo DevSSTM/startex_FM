@@ -913,7 +913,7 @@ const Admin = () => {
                         <div className="invoice-paper" id="invoice-bill">
                             <header className="invoice-header">
                                 <div className="invoice-logo">
-                                    <img src="/logo/logo.png" alt="Stratex Logo" style={{ height: '140px', objectFit: 'contain', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.1)) brightness(1.05)' }} />
+                                    <img src="/logo/logo.png" alt="Stratex Logo" style={{ height: '180px', objectFit: 'contain' }} />
                                 </div>
                                 <div className="invoice-meta">
                                     <h2>INVOICE</h2>
@@ -928,12 +928,7 @@ const Admin = () => {
                                     <strong>{selectedBooking.name}</strong>
                                     <p>{selectedBooking.address}</p>
                                     <p style={{ marginTop: '5px' }}>{selectedBooking.phone}</p>
-                                    {(selectedBooking.assignedSupervisor || selectedBooking.assignedVendor) && (
-                                        <div style={{ marginTop: '10px', padding: '10px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                                            {selectedBooking.assignedSupervisor && <p style={{ fontSize: '0.85rem' }}><strong>Supervisor:</strong> {selectedBooking.assignedSupervisor}</p>}
-                                            {selectedBooking.assignedVendor && <p style={{ fontSize: '0.85rem' }}><strong>Team/Vendor:</strong> {selectedBooking.assignedVendor}</p>}
-                                        </div>
-                                    )}
+
                                 </div>
                                 <div className="bill-from">
                                     <h3>FROM</h3>
