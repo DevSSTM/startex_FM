@@ -101,6 +101,17 @@ const Admin = () => {
     const [editingVendor, setEditingVendor] = useState(null)
     const [editingSupervisor, setEditingSupervisor] = useState(null)
 
+    const CARD_PALETTES = [
+        { bg: '#EFF6FF', border: '#DBEAFE', text: '#1D4ED8', icon: '#3B82F6', light: '#F0F7FF', shadow: 'rgba(59, 130, 246, 0.1)' }, // Blue
+        { bg: '#ECFDF5', border: '#D1FAE5', text: '#059669', icon: '#10B981', light: '#F0FDF4', shadow: 'rgba(16, 185, 129, 0.1)' }, // Green
+        { bg: '#FFFBEB', border: '#FEF3C7', text: '#D97706', icon: '#F59E0B', light: '#FFFDF0', shadow: 'rgba(245, 158, 11, 0.1)' }, // Amber
+        { bg: '#FEF2F2', border: '#FEE2E2', text: '#DC2626', icon: '#EF4444', light: '#FFF5F5', shadow: 'rgba(239, 68, 68, 0.1)' }, // Red
+        { bg: '#F5F3FF', border: '#EDE9FE', text: '#7C3AED', icon: '#8B5CF6', light: '#F9F7FF', shadow: 'rgba(139, 92, 246, 0.1)' }, // Purple
+        { bg: '#FDF2F8', border: '#FCE7F3', text: '#DB2777', icon: '#EC4899', light: '#FFF5FA', shadow: 'rgba(236, 72, 153, 0.1)' }, // Pink
+        { bg: '#F0FDFA', border: '#CCFBF1', text: '#0D9488', icon: '#14B8A6', light: '#F5FFFE', shadow: 'rgba(20, 184, 166, 0.1)' }, // Teal
+        { bg: '#FAF5FF', border: '#F3E8FF', text: '#9333EA', icon: '#A855F7', light: '#FBFAFF', shadow: 'rgba(168, 85, 247, 0.1)' }, // Violet
+    ]
+
     const invoiceRef = useRef()
 
     useEffect(() => {
@@ -672,34 +683,45 @@ const Admin = () => {
                         </div>
 
                         <div className="services-grid">
-                            {services.map(service => (
-                                <div key={service.id} className={`service-mgt-card premium-card ${service.type === 'deep' ? 'featured' : ''}`}>
-                                    <div className="card-top">
-                                        <div className="service-icon">
-                                            {service.type === 'deep' ? <Sparkles size={24} /> : <CheckCircle size={24} />}
+                            {services.map((service, index) => {
+                                const palette = CARD_PALETTES[index % CARD_PALETTES.length];
+                                return (
+                                    <div
+                                        key={service.id}
+                                        className={`service-mgt-card premium-card ${service.type === 'deep' ? 'featured' : ''}`}
+                                        style={{
+                                            borderColor: palette.border,
+                                            background: `linear-gradient(135deg, white 0%, ${palette.light} 100%)`,
+                                            boxShadow: `0 10px 30px -5px ${palette.shadow}`
+                                        }}
+                                    >
+                                        <div className="card-top">
+                                            <div className="service-icon" style={{ backgroundColor: palette.bg, color: palette.text }}>
+                                                {service.type === 'deep' ? <Sparkles size={24} /> : <CheckCircle size={24} />}
+                                            </div>
+                                            <div className="service-info">
+                                                <h4 style={{ color: palette.text }}>{service.name}</h4>
+                                                <span className="price-label">Starts at LKR {Number(service.basePrice).toLocaleString()}</span>
+                                            </div>
                                         </div>
-                                        <div className="service-info">
-                                            <h4>{service.name}</h4>
-                                            <span className="price-label">Starts at LKR {Number(service.basePrice).toLocaleString()}</span>
+                                        <div className="card-body">
+                                            <p>{service.description}</p>
+                                            <div className="tag-row">
+                                                <span className="tag">{service.rooms} Rooms</span>
+                                                <span className="tag">{service.duration}</span>
+                                            </div>
+                                        </div>
+                                        <div className="card-footer">
+                                            <button className="btn-outline" onClick={() => openEditService(service)}>
+                                                <Edit size={16} /> Edit Details
+                                            </button>
+                                            <button className="btn-icon delete" onClick={() => deleteService(service.id)}>
+                                                <Trash2 size={18} />
+                                            </button>
                                         </div>
                                     </div>
-                                    <div className="card-body">
-                                        <p>{service.description}</p>
-                                        <div className="tag-row">
-                                            <span className="tag">{service.rooms} Rooms</span>
-                                            <span className="tag">{service.duration}</span>
-                                        </div>
-                                    </div>
-                                    <div className="card-footer">
-                                        <button className="btn-outline" onClick={() => openEditService(service)}>
-                                            <Edit size={16} /> Edit Details
-                                        </button>
-                                        <button className="btn-icon delete" onClick={() => deleteService(service.id)}>
-                                            <Trash2 size={18} />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 ) : activeTab === 'vendors' ? (
@@ -714,35 +736,48 @@ const Admin = () => {
                             </button>
                         </div>
                         <div className="vendors-grid">
-                            {vendors.map(vendor => (
-                                <div key={vendor.id} className="vendor-card glass-card">
-                                    <div className="vendor-header">
-                                        <div className="vendor-avatar">
-                                            {vendor.image ? (
-                                                <img src={vendor.image} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
-                                            ) : (
-                                                vendor.name.charAt(0)
-                                            )}
+                            {vendors.map((vendor, index) => {
+                                const palette = CARD_PALETTES[index % CARD_PALETTES.length];
+                                return (
+                                    <div
+                                        key={vendor.id}
+                                        className="vendor-card glass-card"
+                                        style={{
+                                            borderColor: palette.border,
+                                            background: `linear-gradient(135deg, white 0%, ${palette.light} 100%)`,
+                                            boxShadow: `0 10px 30px -5px ${palette.shadow}`
+                                        }}
+                                    >
+                                        <div className="vendor-header">
+                                            <div className="vendor-avatar" style={{ backgroundColor: palette.bg, color: palette.text }}>
+                                                {vendor.image ? (
+                                                    <img src={vendor.image} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                                                ) : (
+                                                    vendor.name.charAt(0)
+                                                )}
+                                            </div>
+                                            <div className="vendor-meta">
+                                                <h4>{vendor.name}</h4>
+                                                <span className="vendor-nic">NIC: {vendor.nic}</span>
+                                            </div>
+                                            <div className="action-row" style={{ marginLeft: 'auto' }}>
+                                                <button className="icon-btn" onClick={() => openEditVendor(vendor)}><Edit size={16} /></button>
+                                                <button className="icon-btn cancel" onClick={() => deleteVendor(vendor.id)}><Trash2 size={16} /></button>
+                                            </div>
                                         </div>
-                                        <div className="vendor-meta">
-                                            <h4>{vendor.name}</h4>
-                                            <span className="vendor-nic">NIC: {vendor.nic}</span>
+                                        <div className="vendor-body">
+                                            <div className="v-item"><Phone size={14} /> {vendor.phone}</div>
+                                            <div className="v-item"><MapPin size={14} /> {vendor.address}</div>
+                                            <div className="v-specialty" style={{ backgroundColor: palette.bg, color: palette.text }}>
+                                                <Sparkles size={14} /> {vendor.specialty}
+                                            </div>
                                         </div>
-                                        <div className="action-row" style={{ marginLeft: 'auto' }}>
-                                            <button className="icon-btn" onClick={() => openEditVendor(vendor)}><Edit size={16} /></button>
-                                            <button className="icon-btn cancel" onClick={() => deleteVendor(vendor.id)}><Trash2 size={16} /></button>
+                                        <div className="vendor-footer">
+                                            <span className="v-date">Joined {vendor.joinedDate}</span>
                                         </div>
                                     </div>
-                                    <div className="vendor-body">
-                                        <div className="v-item"><Phone size={14} /> {vendor.phone}</div>
-                                        <div className="v-item"><MapPin size={14} /> {vendor.address}</div>
-                                        <div className="v-specialty"><Sparkles size={14} /> {vendor.specialty}</div>
-                                    </div>
-                                    <div className="vendor-footer">
-                                        <span className="v-date">Joined {vendor.joinedDate}</span>
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                             {vendors.length === 0 && (
                                 <div className="empty-state">
                                     <p>No vendors registered yet.</p>
@@ -762,37 +797,49 @@ const Admin = () => {
                             </button>
                         </div>
                         <div className="vendors-grid">
-                            {supervisors.map(sup => (
-                                <div key={sup.id} className="vendor-card glass-card" style={{ borderLeft: '4px solid #3b82f6' }}>
-                                    <div className="vendor-header">
-                                        <div className="vendor-avatar" style={{ background: '#3b82f6' }}>
-                                            {sup.image ? (
-                                                <img src={sup.image} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
-                                            ) : (
-                                                sup.name.charAt(0)
-                                            )}
+                            {supervisors.map((sup, index) => {
+                                const palette = CARD_PALETTES[(index + 4) % CARD_PALETTES.length];
+                                return (
+                                    <div
+                                        key={sup.id}
+                                        className="vendor-card glass-card"
+                                        style={{
+                                            borderLeft: `4px solid ${palette.icon}`,
+                                            borderColor: palette.border,
+                                            background: `linear-gradient(135deg, white 0%, ${palette.light} 100%)`,
+                                            boxShadow: `0 10px 30px -5px ${palette.shadow}`
+                                        }}
+                                    >
+                                        <div className="vendor-header">
+                                            <div className="vendor-avatar" style={{ background: palette.icon, color: 'white' }}>
+                                                {sup.image ? (
+                                                    <img src={sup.image} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                                                ) : (
+                                                    sup.name.charAt(0)
+                                                )}
+                                            </div>
+                                            <div className="vendor-meta">
+                                                <h4>{sup.name}</h4>
+                                                <span className="vendor-nic">NIC: {sup.nic}</span>
+                                            </div>
+                                            <div className="action-row" style={{ marginLeft: 'auto' }}>
+                                                <button className="icon-btn" onClick={() => openEditSupervisor(sup)}><Edit size={16} /></button>
+                                                <button className="icon-btn cancel" onClick={() => deleteSupervisor(sup.id)}><Trash2 size={16} /></button>
+                                            </div>
                                         </div>
-                                        <div className="vendor-meta">
-                                            <h4>{sup.name}</h4>
-                                            <span className="vendor-nic">NIC: {sup.nic}</span>
+                                        <div className="vendor-body">
+                                            <div className="v-item"><Phone size={14} /> {sup.phone}</div>
+                                            <div className="v-item"><MapPin size={14} /> {sup.address}</div>
+                                            <div className="v-specialty" style={{ background: palette.bg, color: palette.text }}>
+                                                <ShieldCheck size={14} /> {sup.level}
+                                            </div>
                                         </div>
-                                        <div className="action-row" style={{ marginLeft: 'auto' }}>
-                                            <button className="icon-btn" onClick={() => openEditSupervisor(sup)}><Edit size={16} /></button>
-                                            <button className="icon-btn cancel" onClick={() => deleteSupervisor(sup.id)}><Trash2 size={16} /></button>
+                                        <div className="vendor-footer">
+                                            <span className="v-date">Joined {sup.joinedDate}</span>
                                         </div>
                                     </div>
-                                    <div className="vendor-body">
-                                        <div className="v-item"><Phone size={14} /> {sup.phone}</div>
-                                        <div className="v-item"><MapPin size={14} /> {sup.address}</div>
-                                        <div className="v-specialty" style={{ background: '#eff6ff', color: '#1d4ed8' }}>
-                                            <ShieldCheck size={14} /> {sup.level}
-                                        </div>
-                                    </div>
-                                    <div className="vendor-footer">
-                                        <span className="v-date">Joined {sup.joinedDate}</span>
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                             {supervisors.length === 0 && (
                                 <div className="empty-state">
                                     <p>No supervisors registered yet.</p>
