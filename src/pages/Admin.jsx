@@ -540,12 +540,9 @@ const Admin = () => {
                                         {filteredBookings.map((booking, index) => (
                                             <tr key={booking.id}>
                                                 <td className="id-cell">#{booking.id.toString().padStart(3, '0')}</td>
-                                                <td style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: '500' }}>
+                                                <td style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: '500', whiteSpace: 'nowrap' }}>
                                                     {booking.createdAt ? (
-                                                        <>
-                                                            {new Date(booking.createdAt).toLocaleDateString()}<br />
-                                                            {new Date(booking.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                        </>
+                                                        `${new Date(booking.createdAt).toLocaleDateString()} ${new Date(booking.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
                                                     ) : 'N/A'}
                                                 </td>
                                                 <td>

@@ -822,13 +822,16 @@ table {
 th {
     padding: 16px 30px;
     text-align: left;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: #475569;
-    background: #f1f5f9;
-    /* Ash/Gray color */
-    border-bottom: 2px solid #e2e8f0;
+    color: #1e293b;
+    background: #cbd5e1;
+    /* Even Darker Ash */
+    border-bottom: 2px solid #94a3b8;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    white-space: nowrap;
 }
 
 tbody tr:nth-child(odd) {
