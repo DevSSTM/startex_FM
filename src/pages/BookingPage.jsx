@@ -8,6 +8,7 @@ const BookingPage = () => {
     const [services, setServices] = useState([])
     const [currentMonth, setCurrentMonth] = useState(new Date())
     const [existingBookings, setExistingBookings] = useState([])
+    const [isCustomRooms, setIsCustomRooms] = useState(false)
 
     const [formData, setFormData] = useState({
         serviceType: '',
@@ -130,9 +131,11 @@ const BookingPage = () => {
         if (selected) {
             let price = Number(selected.basePrice)
 
-            // Room surcharge logic
-            if (formData.rooms === 3) price += (price * 0.15)
-            if (formData.rooms === 4) price += (price * 0.3)
+            // Dynamic Room surcharge logic: 15% per additional room beyond 2
+            if (formData.rooms > 2) {
+                const extraRooms = formData.rooms - 2
+                price += (price * (extraRooms * 0.15))
+            }
 
             // Add-ons calculation
             const addonsCost = formData.addons.reduce((acc, addonId) => {
@@ -356,14 +359,44 @@ const BookingPage = () => {
                                     {[2, 3, 4].map(num => (
                                         <button
                                             key={num}
-                                            className={formData.rooms === num ? 'selected' : ''}
-                                            onClick={() => setFormData({ ...formData, rooms: num })}
+                                            className={formData.rooms === num && !isCustomRooms ? 'selected' : ''}
+                                            onClick={() => {
+                                                setFormData({ ...formData, rooms: num });
+                                                setIsCustomRooms(false);
+                                            }}
                                         >
-                                            {num} Rooms
+                                            {num} Bedrooms
                                         </button>
                                     ))}
+                                    <button
+                                        className={isCustomRooms ? 'selected' : ''}
+                                        onClick={() => {
+                                            setIsCustomRooms(true);
+                                            if (formData.rooms < 5) setFormData({ ...formData, rooms: 5 });
+                                        }}
+                                    >
+                                        More (5+)
+                                    </button>
                                 </div>
                             </div>
+
+                            {isCustomRooms && (
+                                <div className="custom-rooms-container animate-fade-in">
+                                    <div className="input-group">
+                                        <label>Exact Number of Bedrooms</label>
+                                        <div className="custom-rooms-stepper">
+                                            <button onClick={() => setFormData(prev => ({ ...prev, rooms: Math.max(5, prev.rooms - 1) }))}>-</button>
+                                            <input
+                                                type="number"
+                                                value={formData.rooms}
+                                                onChange={(e) => setFormData({ ...formData, rooms: Math.max(5, parseInt(e.target.value) || 5) })}
+                                            />
+                                            <button onClick={() => setFormData(prev => ({ ...prev, rooms: prev.rooms + 1 }))}>+</button>
+                                        </div>
+                                        <p className="input-hint">Additional 15% surcharge per bedroom beyond 2.</p>
+                                    </div>
+                                </div>
+                            )}
                             <div className="price-preview">
                                 <span>Price:</span>
                                 <h2>LKR {totalPrice.toLocaleString()}</h2>
