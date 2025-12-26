@@ -19,15 +19,28 @@ const BookingPage = () => {
         name: '',
         phone: '',
         address: '',
-        preferredTime: '',
         remarks: ''
     })
 
     const [totalPrice, setTotalPrice] = useState(0)
 
     const AVAILABLE_ADDONS = [
-        { id: 'floor', name: 'Floor buffing', price: 3000, color: '#f59e0b', bg: '#fffbeb' },
-        { id: 'carpet', name: 'Carpet Shampooing', price: 3000, color: '#10b981', bg: '#ecfdf5' }
+        {
+            id: 'floor',
+            name: 'Floor buffing',
+            price: 3500,
+            color: '#f59e0b',
+            bg: '#fffbeb',
+            desc: 'Machine polishing to restore floor shine and enhance surface appearance'
+        },
+        {
+            id: 'carpet',
+            name: 'Carpet Shampooing',
+            price: 2500,
+            color: '#10b981',
+            bg: '#ecfdf5',
+            desc: 'Deep shampoo cleaning to remove embedded dirt, stains, and odors from carpets'
+        }
     ]
 
     const PUBLIC_HOLIDAYS = {
@@ -269,7 +282,6 @@ const BookingPage = () => {
             `*Customer:* ${formData.name}\n` +
             `*Phone:* ${formData.phone}\n` +
             `*Address:* ${formData.address}\n` +
-            `*Preferred Time:* ${formData.preferredTime || 'Standard Slot'}\n` +
             `*Remarks:* ${formData.remarks || 'None'}`
 
         const encoded = encodeURIComponent(message)
@@ -294,7 +306,7 @@ const BookingPage = () => {
                     {/* Step 1: Service Selection */}
                     {step === 1 && (
                         <div className="step-content">
-                            <h3>Select Service Type</h3>
+                            <h3>Select your package</h3>
                             <div className="service-options">
                                 {services.map(service => (
                                     <div
@@ -382,13 +394,18 @@ const BookingPage = () => {
                                             }}
                                         >
                                             <div className="addon-info">
-                                                <h4 style={{ color: '#1e293b' }}>{addon.name}</h4>
+                                                <h4 style={{ color: '#1e293b', marginBottom: '4px' }}>{addon.name}</h4>
+                                                <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '12px', lineHeight: '1.4' }}>{addon.desc}</p>
                                                 <span style={{
                                                     color: addon.color,
-                                                    backgroundColor: 'rgba(255,255,255,0.8)',
-                                                    border: '1px solid rgba(0,0,0,0.05)'
+                                                    backgroundColor: 'rgba(255,255,255,0.9)',
+                                                    border: `1px solid ${addon.color}33`,
+                                                    padding: '4px 12px',
+                                                    borderRadius: '100px',
+                                                    fontSize: '0.9rem',
+                                                    fontWeight: '700'
                                                 }}>
-                                                    LKR {addon.price}
+                                                    LKR {addon.price.toLocaleString()}/=
                                                 </span>
                                             </div>
                                             <div
@@ -537,18 +554,18 @@ const BookingPage = () => {
                                             {eveningSlots.map(time => {
                                                 const isAvailable = checkSlotAvailability(time)
                                                 const dayOfWeek = parse(formData.date, 'yyyy-MM-dd', new Date()).getDay()
-                                                const isSaturdayHoliday = dayOfWeek === 6
+                                                const isSaturdayBlocked = dayOfWeek === 6
 
                                                 return (
                                                     <button
                                                         key={time}
-                                                        className={`slot-btn ${formData.startTime === time ? 'selected' : ''} ${!isAvailable || isSaturdayHoliday ? 'occupied' : ''}`}
-                                                        disabled={!isAvailable || isSaturdayHoliday}
+                                                        className={`slot-btn ${formData.startTime === time ? 'selected' : ''} ${!isAvailable || isSaturdayBlocked ? 'occupied' : ''}`}
+                                                        disabled={!isAvailable || isSaturdayBlocked}
                                                         onClick={() => setFormData({ ...formData, startTime: time })}
                                                     >
                                                         {parseInt(time.split(':')[0]) - 12}:00 - {parseInt(time.split(':')[0]) - 12}:30 PM
-                                                        {isSaturdayHoliday ? (
-                                                            <span className="occupied-badge" style={{ background: '#fef3c7', color: '#92400e', borderColor: '#fde68a' }}>Holiday</span>
+                                                        {isSaturdayBlocked ? (
+                                                            <span className="occupied-badge" style={{ background: '#f1f5f9', color: '#64748b', borderColor: '#e2e8f0' }}>Not Available</span>
                                                         ) : (
                                                             !isAvailable && <span className="occupied-badge">Booked</span>
                                                         )}
@@ -600,15 +617,6 @@ const BookingPage = () => {
                                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                                     style={{ fontFamily: 'inherit' }}
                                 ></textarea>
-                            </div>
-                            <div className="input-group">
-                                <input
-                                    type="text"
-                                    placeholder="Preferred Time"
-                                    value={formData.preferredTime}
-                                    onChange={(e) => setFormData({ ...formData, preferredTime: e.target.value })}
-                                    style={{ fontFamily: 'inherit' }}
-                                />
                             </div>
                             <div className="input-group">
                                 <textarea

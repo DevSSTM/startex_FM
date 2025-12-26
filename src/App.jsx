@@ -23,7 +23,7 @@ function AppContent() {
         </Routes>
       </main>
       {!isAdmin && <Footer />}
-      <FloatingWhatsApp />
+      {!isAdmin && <FloatingWhatsApp />}
     </div>
   )
 }
