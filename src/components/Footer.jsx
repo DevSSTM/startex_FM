@@ -21,9 +21,9 @@ const Footer = () => {
                 </div>
                 <div className="footer-contact">
                     <h4>Contact Us</h4>
-                    <p><MapPin size={18} /> 123 Clean St, Colombo, Sri Lanka</p>
+                    <p><MapPin size={18} /> Colombo, Sri Lanka</p>
                     <p><Phone size={18} /> +94 11 234 5678</p>
-                    <p><Mail size={18} /> hello@startex.com</p>
+                    <p><Mail size={18} />startexfacilitiesmanagement@gmail.com</p>
                 </div>
             </div>
             <div className="footer-bottom">
