@@ -538,7 +538,7 @@ const BookingPage = () => {
                                 <div className="time-slots-section" style={{ padding: '0 10px' }}>
                                     {/* Morning */}
                                     <div className="input-group">
-                                        <label><Clock size={18} /> Morning Session</label>
+                                        <label><Clock size={18} /> Morning Starting Time</label>
                                         <div className="time-slots-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))' }}>
                                             {morningSlots.map(time => {
                                                 const isAvailable = checkSlotAvailability(time)
@@ -560,7 +560,7 @@ const BookingPage = () => {
                                     {/* Afternoon - Hidden if Morning is full (2 bookings) */}
                                     {getSessionCounts(formData.date).morningCount < 2 && (
                                         <div className="input-group" style={{ marginTop: '20px' }}>
-                                            <label><Clock size={18} /> Afternoon Session</label>
+                                            <label><Clock size={18} /> Afternoon Starting Time</label>
                                             <div className="time-slots-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))' }}>
                                                 {afternoonSlots.map(time => {
                                                     const isAvailable = checkSlotAvailability(time)
@@ -582,7 +582,7 @@ const BookingPage = () => {
 
                                     {/* Evening */}
                                     <div className="input-group" style={{ marginTop: '20px' }}>
-                                        <label><Clock size={18} /> Evening Session</label>
+                                        <label><Clock size={18} /> Evening Starting Time</label>
                                         <div className="time-slots-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))' }}>
                                             {eveningSlots.map(time => {
                                                 const isAvailable = checkSlotAvailability(time)
